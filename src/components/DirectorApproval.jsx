@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import StockQuery from './StockQuery';
 function DirectorApproval() {
   const [pendingStocks, setPendingStocks] = useState([]);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [selectedOption, setSelectedOption] = useState('Main Page')
   const fetchPendingStocks = async () => {
     try {
       
@@ -37,7 +38,19 @@ function DirectorApproval() {
   };
 
   return (
-    <div>
+    <>
+      <div className="sidebar">
+        <button onClick={() => setSelectedOption('Main Page')}>View Stocks</button>
+        <button onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</button>
+      </div>
+      {
+        selectedOption === 'Fetch Stocks' && (
+          <StockQuery />
+        )
+      }
+      {
+        selectedOption === 'Main Page' && (
+          <div>
       <h2>Pending Director Approvals</h2>
       <table>
         <thead>
@@ -79,6 +92,10 @@ function DirectorApproval() {
         </tbody>
       </table>
     </div>
+        )
+      }
+    
+    </>
   );
 }
 

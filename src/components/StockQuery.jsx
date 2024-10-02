@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-/*  {isEditing && (
-  <EditStockModal
-    stock={stockToEdit}
-    onClose={() => setIsEditing(false)}
-    onSave={handleSaveEdit}
-  />
-)}*/
 
 const StockQuery = () => {
   const [searchId, setSearchId] = useState('');
@@ -19,8 +12,21 @@ const StockQuery = () => {
   const [endDate, setEndDate] = useState('');
   const [results, setResults] = useState([]);
   const [selectedStock, setSelectedStock] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [stockToEdit, setStockToEdit] = useState(null);
+  const [allocatedDepartments, setAllocatedDepartments] = useState([]); // Store the fetched departments
+
+  // Fetch config (allocated departments)
+  const fetchConfig = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/admin/config');
+      setAllocatedDepartments(res.data.allocatedDept || []); // Set fetched allocated departments
+    } catch (err) {
+      console.error('Error fetching config', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchConfig(); // Fetch allocated departments on component mount
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -38,31 +44,25 @@ const StockQuery = () => {
     setSelectedStock(stock); // Show stock details when clicked
   };
 
-  const handleEditStock = (stock) => {
-    setStockToEdit(stock);
-    setIsEditing(true); // Open the modal
-  };
-
   const handleExportExcel = async () => {
     const query = {};
 
-  if (searchId) query._id = searchId;
-  if (allocatedDept) query.allocatedDept = allocatedDept;
-  if (roomNo) query.roomNo = roomNo;
-  if (specification) query.specification = specification;
-  if (quantity) query.quantity = quantity;
-  if (dateOfPurchase) query.dateOfPurchase = dateOfPurchase;  
-  console.log(query);
-  
+    if (searchId) query._id = searchId;
+    if (allocatedDept) query.allocatedDept = allocatedDept;
+    if (roomNo) query.roomNo = roomNo;
+    if (specification) query.specification = specification;
+    if (quantity) query.quantity = quantity;
+    if (dateOfPurchase) query.dateOfPurchase = dateOfPurchase;
+
     try {
       const res = await axios.post('http://localhost:5000/api/items/export-excel', query, {
-        responseType: 'blob', 
+        responseType: 'blob',
       });
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'stocks.xlsx'); 
+      link.setAttribute('download', 'stocks.xlsx');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -71,17 +71,6 @@ const StockQuery = () => {
     }
   };
 
-  const handleSaveEdit = async (updatedStock) => {
-    try {
-      await axios.put(`http://localhost:5000/api/items/edit/${updatedStock._id}`, updatedStock);
-      // Refresh the results after editing
-      setResults((prev) =>
-        prev.map((stock) => (stock._id === updatedStock._id ? updatedStock : stock))
-      );
-    } catch (err) {
-      console.error('Error saving stock:', err);
-    }
-  };
 
   return (
     <div>
@@ -90,13 +79,11 @@ const StockQuery = () => {
         <input type="text" placeholder="Search by _id" onChange={(e) => setSearchId(e.target.value)} />
         <select onChange={(e) => setAllocatedDept(e.target.value)}>
           <option value="">Select Department</option>
-          <option value="CMPN">CMPN</option>
-          <option value="INFT">INFT</option>
-          <option value="EXTC">EXTC</option>
-          <option value="MECH">MECH</option>
-          <option value="ELEC">ELEC</option>
-          <option value="AIML">AIML</option>
-          <option value="ECS">ECS</option>
+          {allocatedDepartments.map((dept) => (
+            <option key={dept} value={dept}>
+              {dept}
+            </option>
+          ))}
         </select>
         <input type="text" placeholder="Room No" onChange={(e) => setRoomNo(e.target.value)} />
         <input type="text" placeholder="Specification" onChange={(e) => setSpecification(e.target.value)} />
@@ -134,7 +121,6 @@ const StockQuery = () => {
                 <td>{stock.dateOfPurchase}</td>
                 <td>
                   <button onClick={() => handleViewDetails(stock)}>View Full Stock Details</button>
-                
                 </td>
               </tr>
             ))}
@@ -146,29 +132,49 @@ const StockQuery = () => {
       {selectedStock && (
         <div>
           <h3>Stock Details</h3>
-          <p><strong>Stock Unique Identification:</strong> {selectedStock._id}</p>
-          <p><strong>Department:</strong> {selectedStock.allocatedDept}</p>
-          <p><strong>Room No:</strong> {selectedStock.roomNo}</p>
-          <p><strong>Specification:</strong> {selectedStock.specification}</p>
-          <p><strong>Batch No:</strong> {selectedStock.batchNo}</p>
-          <p><strong>Quantity ID:</strong> {selectedStock.quantity}</p>
-          <p><strong>Date of Purchase:</strong> {selectedStock.dateOfPurchase}</p>
-          <p><strong>Specification:</strong> {selectedStock.specification}</p>
-          <p><strong>Financial Year:</strong> {selectedStock.financialYear}</p>
-          <p><strong>Total Amount:</strong> {selectedStock.totalAmount}</p>
-          <p><strong>Invoice:</strong>{selectedStock.bills ? (
-                      <a href={selectedStock.bills} target="_blank" rel="noopener noreferrer">
-                        View Invoice
-                      </a>
-                    ) : (
-                      "No Invoice"
-                    )}</p>
-          <p><strong>Vendor Name:</strong> {selectedStock.vendorName}</p>
-          {/* Add more fields if necessary */}
+          <p>
+            <strong>Stock Unique Identification:</strong> {selectedStock._id}
+          </p>
+          <p>
+            <strong>Department:</strong> {selectedStock.allocatedDept}
+          </p>
+          <p>
+            <strong>Room No:</strong> {selectedStock.roomNo}
+          </p>
+          <p>
+            <strong>Specification:</strong> {selectedStock.specification}
+          </p>
+          <p>
+            <strong>Batch No:</strong> {selectedStock.batchNo}
+          </p>
+          <p>
+            <strong>Quantity ID:</strong> {selectedStock.quantity}
+          </p>
+          <p>
+            <strong>Date of Purchase:</strong> {selectedStock.dateOfPurchase}
+          </p>
+          <p>
+            <strong>Financial Year:</strong> {selectedStock.financialYear}
+          </p>
+          <p>
+            <strong>Total Amount:</strong> {selectedStock.totalAmount}
+          </p>
+          <p>
+            <strong>Invoice:</strong>{' '}
+            {selectedStock.bills ? (
+              <a href={selectedStock.bills} target="_blank" rel="noopener noreferrer">
+                View Invoice
+              </a>
+            ) : (
+              'No Invoice'
+            )}
+          </p>
+          <p>
+            <strong>Vendor Name:</strong> {selectedStock.vendorName}
+          </p>
         </div>
       )}
 
-    
       <button onClick={handleExportExcel}>Export to Excel</button>
     </div>
   );

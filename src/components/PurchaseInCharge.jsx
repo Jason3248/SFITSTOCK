@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebaseConfig"; // Import Firebase storage
+import { storage } from "../firebaseConfig";
 import StockQuery from "./StockQuery";
 
 function PurchaseInCharge() {
@@ -9,11 +9,9 @@ function PurchaseInCharge() {
   const [approvedStocks, setApprovedStocks] = useState([]);
   const [assetHeads, setAssetHeads] = useState([]);
   const [allocatedDepartments, setAllocatedDepartments] = useState([]);
-  const [selectedOption, setSelectedOption] = useState('Add Stock'); // New state variable
+  const [selectedOption, setSelectedOption] = useState('Add Stock'); 
   const [file, setFile] = useState(null);
   const [billsUrl, setBillsUrl] = useState("");
-
-
   const [stockData, setStockData] = useState({
     _id: "",
     assetHeads: "",
@@ -37,7 +35,6 @@ function PurchaseInCharge() {
 
   const [editId, setEditId] = useState(null);
 
-  // Fetch config (assetHeads and allocatedDept) from backend
   const fetchConfig = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/admin/config");
@@ -69,7 +66,7 @@ function PurchaseInCharge() {
   useEffect(() => {
     fetchStocks();
     fetchApprovedStocks();
-    fetchConfig(); // Load asset heads and allocated departments from config
+    fetchConfig(); 
   }, []);
 
   const handleChange = (e) => {
@@ -86,10 +83,10 @@ function PurchaseInCharge() {
     try {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadUrl = await getDownloadURL(snapshot.ref);
-      return downloadUrl; // Return the download URL for use
+      return downloadUrl; 
     } catch (error) {
       console.error("File upload failed", error);
-      return null; // Return null if the upload fails
+      return null; 
     }
   };
  
@@ -98,16 +95,16 @@ function PurchaseInCharge() {
     try {
       let uploadedBillUrl = "";
       if (file) {
-        uploadedBillUrl = await uploadFile(); // Get the uploaded file URL
+        uploadedBillUrl = await uploadFile(); 
       }
-      // Ensure the correct bills URL is used
+ 
       if (editId) {
         const encodedId = encodeURIComponent(editId);
         await axios.put(
           `http://localhost:5000/api/items/put/${encodedId}`,
           {
             ...stockData,
-            bills: uploadedBillUrl || stockData.bills, // Set the bill file URL or keep the existing one
+            bills: uploadedBillUrl || stockData.bills, 
           }
         );
       } else {
@@ -187,14 +184,11 @@ function PurchaseInCharge() {
 
   const addToFinalDatabase = async (stock) => {
     try {
+
       await axios.post("http://localhost:5000/api/items/add", { _id: stock._id });
       alert("Stock successfully added to the Final database");
 
-      await axios.put(`http://localhost:5000/api/items/put/${stock._id}`, {
-        ...stock,
-        assessmentStatus: 'completed',
-      });
-
+      await handleDelete(stock._id);
       setStocks(stocks.filter((s) => s._id !== stock._id));
       fetchApprovedStocks();
     } catch (err) {

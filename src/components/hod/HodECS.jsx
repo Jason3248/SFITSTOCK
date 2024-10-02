@@ -1,29 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import StockQuery from '../StockQuery';
 function HodECS() {
   const [stocks, setStocks] = useState([]);
   const [filteredStocks, setFilteredStocks] = useState([]);
-  const [filters, setFilters] = useState({
-    assetHeads: "",
-    specification: "",
-    vendorName: "",
-    quantity: 0,
-    batchNo: "",
-    totalAmount: 0,
-    roomNo: "",
-    dateOfPurchase: "",
-    purpose: "",
-    financialYear: "",
-    bills: "",
-    allocatedDept: "",
-    hodApprovalStatus: "pending",
-    principalApprovalStatus: "pending",
-    directorApprovalStatus: "pending",
-    rejectionReason: '',
-    rejectedBy: ''  });
-
   const [rejectionReason, setRejectionReason] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState('Main Page');
 
   const fetchStocks = async () => {
     try {
@@ -47,7 +29,7 @@ function HodECS() {
     }
     try {
       const encodedId = encodeURIComponent(id);
-      await axios.put(`http://localhost:5000/api/items/approve/cmpn/${encodedId}`, {
+      await axios.put(`http://localhost:5000/api/items/approve/ecs/${encodedId}`, {
         hodApprovalStatus: status,
         rejectionReason: reason
       });
@@ -57,102 +39,23 @@ function HodECS() {
     }
   };
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters({
-      ...filters,
-      [name]: value,
-    });
-  };
-
-  useEffect(() => {
-    const filtered = stocks.filter((stock) => {
-      return (
-        (filters.assetHeads === "" || stock.assetHeads.includes(filters.assetHeads)) &&
-        (filters.specification === "" || stock.specification.includes(filters.specification)) &&
-        (filters.vendorName === "" || stock.vendorName.includes(filters.vendorName)) &&
-        (filters.batchNo === "" || stock.batchNo.includes(filters.batchNo)) &&
-        (filters.roomNo === "" || stock.roomNo.includes(filters.roomNo)) &&
-        (filters.dateOfPurchase === "" || stock.dateOfPurchase.includes(filters.dateOfPurchase)) &&
-        (filters.allocatedDept === "" || stock.allocatedDept.includes(filters.allocatedDept)) &&
-        (filters.hodApprovalStatus === "" || stock.hodApprovalStatus === filters.hodApprovalStatus) &&
-        (filters.principalApprovalStatus === "" || stock.principalApprovalStatus === filters.principalApprovalStatus)
-      );
-    });
-    setFilteredStocks(filtered);
-  }, [filters, stocks]);
 
   return (
     <div className="App">
-      <h1>Stock Approval</h1>
+       <div className="sidebar">
+        <button onClick={() => setSelectedOptions('Main Page')}>View Stocks</button>
+        <button onClick={() => setSelectedOptions('Fetch Stocks')}>Fetch Stocks</button>
+       </div>
+      {
+        selectedOptions === 'Fetch Stocks' && (
+         <StockQuery />
+        )
+      }
 
-      <div>
-        <h2>Filter Options</h2>
-        <form>
-          <input
-            type="text"
-            name="assetHeads"
-            placeholder="Equipment Type"
-            value={filters.assetHeads}
-            onChange={handleFilterChange}
-          />
-          <input
-            type="text"
-            name="specification"
-            placeholder="Stock Type"
-            value={filters.specification}
-            onChange={handleFilterChange}
-          />
-          <input
-            type="text"
-            name="vendorName"
-            placeholder="Vendor Name"
-            value={filters.vendorName}
-            onChange={handleFilterChange}
-          />
-          <input
-            type="text"
-            name="batchNo"
-            placeholder="Batch No"
-            value={filters.batchNo}
-            onChange={handleFilterChange}
-          />
-          <input
-            type="text"
-            name="roomNo"
-            placeholder="Room No"
-            value={filters.roomNo}
-            onChange={handleFilterChange}
-          />
-          <input
-            type="date"
-            name="dateOfPurchase"
-            value={filters.dateOfPurchase}
-            onChange={handleFilterChange}
-          />
-          <input
-            type="date"
-            name="allocatedDept"
-            value={filters.allocatedDept}
-            onChange={handleFilterChange}
-          />
-          
-        
-
-          <select
-            name="hodApprovalStatus"
-            value={filters.hodApprovalStatus}
-            onChange={handleFilterChange}
-          >
-            <option value="">Approval Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </form>
-      </div>
-
-      <h2>Stock List</h2>
+   
+      { selectedOptions === 'Main Page' && (
+        <>
+          <h1>Stock List</h1>
       <table>
         <thead>
           <tr>
@@ -215,6 +118,9 @@ function HodECS() {
           ))}
         </tbody>
       </table>
+        </>
+      )}
+      
     </div>
   );
 }
