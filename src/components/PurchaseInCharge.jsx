@@ -136,7 +136,7 @@ function PurchaseInCharge() {
       });
       setSelectedOption('Stocks for Approval');
     } catch (error) {
-      console.error("Error adding/updating item", error);
+      console.error("Error adding/updating item", error.response || error.message);
     }
   };
   

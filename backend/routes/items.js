@@ -5,51 +5,65 @@ const router = express.Router();
 const XLSX = require('xlsx');
 
 router.post('/post', async (req, res) => {
-  const { _id, assetHeads, specification, dateOfPurchase, financialYear, batchNo, vendorName, quantity, totalAmount, roomNo, purpose, bills, allocatedDept  } = req.body;
+  const { _id, assetHeads, specification, dateOfPurchase, financialYear, batchNo, vendorName, quantity, totalAmount, roomNo, purpose, bills, allocatedDept } = req.body;
+  
   console.log(req.body); 
   
   if (!allocatedDept || !roomNo || !specification || !quantity) {
       return res.status(400).json({ error: 'All fields are required' });
   }
+
   try {
+    
     const existingStocks = await stock.find({
       allocatedDept,
       roomNo,
       specification,
-  }).sort({ _id: 1 }); 
+      dateOfPurchase,
+      vendorName
+    }).sort({ _id: 1 });
 
-  let maxQuantity = 0;
-  if (existingStocks.length > 0) {
+    // Determine max quantity
+    let maxQuantity = 0;
+    if (existingStocks.length > 0) {
       const lastStock = existingStocks[existingStocks.length - 1];
       const lastId = lastStock._id;
       const parts = lastId.split('/');
-      maxQuantity = parseInt(parts[3]);  
-  }
+      maxQuantity = parseInt(parts[5]);  // Adjust index for quantity part of the _id
+    }
 
-  for (let i = 1; i <= quantity; i++) {
-      const newId = `${allocatedDept}/${roomNo}/${specification}/${maxQuantity + i}`;
+    let createdStocks = [];
+
+    for (let i = 1; i <= quantity; i++) {
+      const newId = `${allocatedDept}/${roomNo}/${specification}/${dateOfPurchase}/${vendorName}/${maxQuantity + i}`;
+      console.log(newId);  // Log the new _id being created
+      
       const newStock = new stock({
-          allocatedDept,
-          roomNo,
-          specification,
-          quantity: 1,  // Since we are adding individual stocks
-          _id: newId,
-          assetHeads,
-          dateOfPurchase,
-          financialYear,
-          batchNo,
-          vendorName,
-          totalAmount,
-          bills,
-          purpose
-
+        allocatedDept,
+        roomNo,
+        specification,
+        quantity: 1,  // Adding one stock at a time
+        _id: newId,
+        assetHeads,
+        dateOfPurchase,
+        financialYear,
+        batchNo,
+        vendorName,
+        totalAmount,
+        bills,
+        purpose
       });
-      await newStock.save();
-  }
 
-  return res.status(201).json({ message: `${quantity} stock items added successfully` });
+      await newStock.save();  // Save new stock
+      createdStocks.push(newStock);  // Track created stock
+    }
+
+    console.log(createdStocks);  // Log all created stocks after the loop
+    
+    return res.status(201).json({ message: `${quantity} stock items added successfully` });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create item', err});
+    console.error("Error creating stock items:", err);  // Log the error for debugging
+    return res.status(500).json({ error: 'Failed to create item', details: err.message });
   }
 });
 
@@ -519,38 +533,89 @@ router.post('/export-excel', async (req, res) => {
     if (specification) query.specification = specification;
     if (quantity) query.quantity = quantity;
     if (dateOfPurchase) query.dateOfPurchase = dateOfPurchase;
+
     const stocks = await approvedStock.find(query);
 
     if (!stocks || stocks.length === 0) {
       return res.status(404).send('No stocks found to export');
     }
 
-    const data = stocks.map(stock => ({
-      _id: stock._id,
-      allocatedDept: stock.allocatedDept,
-      roomNo: stock.roomNo,
-      specification: stock.specification,
-      quantity: stock.quantity,
-      dateOfPurchase: stock.dateOfPurchase,
-      // Add other fields as needed
-    }));
+    // Create the data array for the Excel file
+    const data = stocks.map(stock => ([
+      stock.allocatedDept,
+      stock.roomNo,
+      stock.specification,
+      stock.quantity,
+      stock.dateOfPurchase, // Format date
+      stock.vendorName,
+      stock.totalAmount,
+    ]));
 
-    // Create a new workbook and a worksheet
+    // Get the current date for "Date of Report"
+    const currentDate = new Date().toLocaleDateString();
+
+    // Create a new workbook
     const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data);
 
-    // Append the worksheet to the workbook
+    
+    const worksheetData = [
+      ['ST. FRANCIS INSTITUTE OF TECHNOLOGY'], // Heading
+      ['Stock Verification Report'], // Sub-heading
+      [`Room No: ${roomNo || 'All'}`], // Room number dynamically populated
+      [`Date of Report: ${currentDate}`], // Date of download
+      [], // Empty row for separation
+      ['Allocated Dept', 'Room No', 'Specification', 'Quantity', 'Date of Purchase', 'Vendor Name', 'Total Amount'], // Column headers
+      ...data, // Data rows
+      [], // Empty row
+      ['Notes:'], // Notes or footer section
+      ['This document is system-generated and confidential. Handle with care.'],
+      ['Verified By: _____________________________'], // Placeholder for verification signature
+    ];
+
+    // Create a new worksheet from the data
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+    // Apply some formatting for headings, subheadings, and columns
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    
+    // Format Heading
+    worksheet['A1'].s = { font: { bold: true, sz: 14 }, alignment: { horizontal: 'center' } };
+    
+    // Format Sub-heading
+    worksheet['A2'].s = { font: { bold: true, sz: 12 }, alignment: { horizontal: 'center' } };
+    
+    // Column headers
+    for (let col = 0; col <= 6; col++) {
+      const headerCell = XLSX.utils.encode_cell({ r: 5, c: col });
+      if (worksheet[headerCell]) {
+        worksheet[headerCell].s = {
+          font: { bold: true },
+          alignment: { horizontal: 'center', vertical: 'center' },
+        };
+      }
+    }
+
+ 
+    worksheet['!cols'] = [
+      { wch: 20 }, // Allocated Dept
+      { wch: 15 }, // Room No
+      { wch: 25 }, // Specification
+      { wch: 10 }, // Quantity
+      { wch: 18 }, // Date of Purchase
+      { wch: 20 }, // Vendor Name
+      { wch: 15 }, // Total Amount
+    ];
+
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Stocks');
 
-    // Write the workbook to a buffer
     const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
 
-    // Set the headers and send the buffer as an Excel file
     res.setHeader('Content-Disposition', 'attachment; filename=stocks.xlsx');
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ 
     res.send(buffer);
   } catch (error) {
-    console.error('Error exporting to Excel:', error); // Log the error for debugging
+    console.error('Error exporting to Excel:', error.message, error.stack); // Log the error for debugging
     res.status(500).send('Server error while exporting to Excel');
   }
 });
