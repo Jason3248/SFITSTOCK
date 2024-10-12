@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebaseConfig";
+import { storage } from "../firebaseConfig"; // Import Firebase storage
 import StockQuery from "./StockQuery";
+import "../styles/PurchaseInCharge.css"
 
 function PurchaseInCharge() {
   const [stocks, setStocks] = useState([]);
   const [approvedStocks, setApprovedStocks] = useState([]);
   const [assetHeads, setAssetHeads] = useState([]);
   const [allocatedDepartments, setAllocatedDepartments] = useState([]);
-  const [selectedOption, setSelectedOption] = useState('Add Stock'); 
+  const [selectedOption, setSelectedOption] = useState('Add Stock'); // New state variable
   const [file, setFile] = useState(null);
   const [billsUrl, setBillsUrl] = useState("");
+
+
   const [stockData, setStockData] = useState({
     _id: "",
     assetHeads: "",
@@ -35,6 +38,7 @@ function PurchaseInCharge() {
 
   const [editId, setEditId] = useState(null);
 
+  // Fetch config (assetHeads and allocatedDept) from backend
   const fetchConfig = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/admin/config");
@@ -66,7 +70,7 @@ function PurchaseInCharge() {
   useEffect(() => {
     fetchStocks();
     fetchApprovedStocks();
-    fetchConfig(); 
+    fetchConfig(); // Load asset heads and allocated departments from config
   }, []);
 
   const handleChange = (e) => {
@@ -83,28 +87,28 @@ function PurchaseInCharge() {
     try {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadUrl = await getDownloadURL(snapshot.ref);
-      return downloadUrl; 
+      return downloadUrl; // Return the download URL for use
     } catch (error) {
       console.error("File upload failed", error);
-      return null; 
+      return null; // Return null if the upload fails
     }
   };
- 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       let uploadedBillUrl = "";
       if (file) {
-        uploadedBillUrl = await uploadFile(); 
+        uploadedBillUrl = await uploadFile(); // Get the uploaded file URL
       }
- 
+      // Ensure the correct bills URL is used
       if (editId) {
         const encodedId = encodeURIComponent(editId);
         await axios.put(
           `http://localhost:5000/api/items/put/${encodedId}`,
           {
             ...stockData,
-            bills: uploadedBillUrl || stockData.bills, 
+            bills: uploadedBillUrl || stockData.bills, // Set the bill file URL or keep the existing one
           }
         );
       } else {
@@ -113,7 +117,7 @@ function PurchaseInCharge() {
           bills: uploadedBillUrl, // Set the bill file URL
         });
       }
-  
+
       setEditId(null);
       fetchStocks();
       setStockData({
@@ -136,10 +140,10 @@ function PurchaseInCharge() {
       });
       setSelectedOption('Stocks for Approval');
     } catch (error) {
-      console.error("Error adding/updating item", error.response || error.message);
+      console.error("Error adding/updating item", error);
     }
   };
-  
+
 
 
   const handleEdit = (stock) => {
@@ -184,11 +188,14 @@ function PurchaseInCharge() {
 
   const addToFinalDatabase = async (stock) => {
     try {
-
       await axios.post("http://localhost:5000/api/items/add", { _id: stock._id });
       alert("Stock successfully added to the Final database");
 
-      await handleDelete(stock._id);
+      await axios.put(`http://localhost:5000/api/items/put/${stock._id}`, {
+        ...stock,
+        assessmentStatus: 'completed',
+      });
+
       setStocks(stocks.filter((s) => s._id !== stock._id));
       fetchApprovedStocks();
     } catch (err) {
@@ -196,19 +203,22 @@ function PurchaseInCharge() {
     }
   };
 
-  
+
 
   return (
     <div className="purchase-in-charge-container">
-      <div className="sidebar">
-        <button onClick={() => setSelectedOption('Add Stock')}>Add Stock</button>
-        <button onClick={() => setSelectedOption('Stocks for Approval')}>Stocks for Approval</button>
-        <button onClick={() => setSelectedOption('Approved Stocks')}>Approved Stocks</button>
-        { rejectedStocks.length > 0 && (
+      <div className="sidebarParent">
+        <div className="sidebar">
+          <button onClick={() => setSelectedOption('Add Stock')}>Add Stock</button>
+          <button onClick={() => setSelectedOption('Stocks for Approval')}>Stocks for Approval</button>
+          <button onClick={() => setSelectedOption('Approved Stocks')}>Approved Stocks</button>
+          {rejectedStocks.length > 0 && (
             <button onClick={() => setSelectedOption('Rejected Stocks')}>Some Stocks Have Been Rejected.Click to View</button>
-        )}
-        <button onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</button>
+          )}
+          <button onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</button>
+        </div>
       </div>
+
 
       <div className="content">
         {selectedOption === 'Add Stock' && (
@@ -242,80 +252,80 @@ function PurchaseInCharge() {
                   required
                 />
               </label>
-             
-        <label>
-          Vendor Name:
-          <input
-            type="text"
-            name="vendorName"
-            value={stockData.vendorName}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Quantity:
-          <input
-            type="number"
-            name="quantity"
-            value={stockData.quantity}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Batch No:
-          <input
-            type="text"
-            name="batchNo"
-            value={stockData.batchNo}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Total Amount:
-          <input
-            type="number"
-            name="totalAmount"
-            value={stockData.totalAmount}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Room No.:
-          <input
-            type="text"
-            name="roomNo"
-            value={stockData.roomNo}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Date of Purchase:
-          <input
-            type="date"
-            name="dateOfPurchase"
-            value={stockData.dateOfPurchase}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Purpose:
-          <input
-            type="text"
-            name="purpose"
-            value={stockData.purpose}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-         Financial Year:
-          <input
-            type="text"
-            name="financialYear"
-            value={stockData.financialYear}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
+
+              <label>
+                Vendor Name:
+                <input
+                  type="text"
+                  name="vendorName"
+                  value={stockData.vendorName}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Quantity:
+                <input
+                  type="number"
+                  name="quantity"
+                  value={stockData.quantity}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Batch No:
+                <input
+                  type="text"
+                  name="batchNo"
+                  value={stockData.batchNo}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Total Amount:
+                <input
+                  type="number"
+                  name="totalAmount"
+                  value={stockData.totalAmount}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Room No.:
+                <input
+                  type="text"
+                  name="roomNo"
+                  value={stockData.roomNo}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Date of Purchase:
+                <input
+                  type="date"
+                  name="dateOfPurchase"
+                  value={stockData.dateOfPurchase}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Purpose:
+                <input
+                  type="text"
+                  name="purpose"
+                  value={stockData.purpose}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Financial Year:
+                <input
+                  type="text"
+                  name="financialYear"
+                  value={stockData.financialYear}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
                 Bills (Invoice):
                 <input type="file" name="bills" onChange={handleFileChange} />
               </label>
@@ -380,21 +390,21 @@ function PurchaseInCharge() {
                     <td>{stock.vendorName}</td>
                     <td>{stock.purpose}</td>
                     <td>
-                        {stock.bills ? (
-                          <a href={stock.bills} target="_blank" rel="noopener noreferrer">
-                            View Invoice
-                          </a>
-                        ) : (
-                          "No Invoice"
-                        )}
+                      {stock.bills ? (
+                        <a href={stock.bills} target="_blank" rel="noopener noreferrer">
+                          View Invoice
+                        </a>
+                      ) : (
+                        "No Invoice"
+                      )}
                     </td>
                     <td>{stock.hodApprovalStatus}</td>
                     <td>{stock.principalApprovalStatus}</td>
                     <td>{stock.directorApprovalStatus}</td>
                     <td>
                       {stock.hodApprovalStatus === 'approved' &&
-                      stock.principalApprovalStatus === 'approved' &&
-                      stock.directorApprovalStatus === 'approved' ? (
+                        stock.principalApprovalStatus === 'approved' &&
+                        stock.directorApprovalStatus === 'approved' ? (
                         <button onClick={() => addToFinalDatabase(stock)}>Add to Database</button>
                       ) : (
                         <>
@@ -420,48 +430,48 @@ function PurchaseInCharge() {
                   <th>Type/Specification</th>
                   <th>Date of Purchase</th>
                   <th>Financial Year</th>
-              <th>Batch No</th>
-              <th>Quantity</th>
-              <th>Department</th>
-              <th>Amount</th>
-              <th>Room No.</th>
-              <th>Vendor Name</th>
-              <th>Purpose</th>
-              <th>Invoice</th>
-              <th>Approval By HOD</th>
-              <th>Approval By Principal</th>
-              <th>Approval By Director</th>
+                  <th>Batch No</th>
+                  <th>Quantity</th>
+                  <th>Department</th>
+                  <th>Amount</th>
+                  <th>Room No.</th>
+                  <th>Vendor Name</th>
+                  <th>Purpose</th>
+                  <th>Invoice</th>
+                  <th>Approval By HOD</th>
+                  <th>Approval By Principal</th>
+                  <th>Approval By Director</th>
                 </tr>
               </thead>
               <tbody>
-              {approvedStocks.map((stock) => (
-              <tr key={stock._id}>
-              <td>{stock.assetHeads}</td>
-                <td>{stock.specification}</td>
-                <td>{stock.dateOfPurchase}</td>
-                <td>{stock.financialYear}</td>
-                <td>{stock.batchNo}</td>
-                <td>{stock.quantity}</td>
-                <td>{stock.allocatedDept}</td>
-                <td>{stock.totalAmount}</td>
-                <td>{stock.roomNo}</td>
-                <td>{stock.vendorName}</td>
-                <td>{stock.purpose}</td>
-                <td>
-                    {stock.bills ? (
-                      <a href={stock.bills} target="_blank" rel="noopener noreferrer">
-                        View Invoice
-                      </a>
-                    ) : (
-                      "No Invoice"
-                    )}
-                </td>
-                <td>{stock.hodApprovalStatus}</td>
-                <td>{stock.principalApprovalStatus}</td>
-                <td>{stock.directorApprovalStatus}</td>
-                
-              </tr>
-            ))}
+                {approvedStocks.map((stock) => (
+                  <tr key={stock._id}>
+                    <td>{stock.assetHeads}</td>
+                    <td>{stock.specification}</td>
+                    <td>{stock.dateOfPurchase}</td>
+                    <td>{stock.financialYear}</td>
+                    <td>{stock.batchNo}</td>
+                    <td>{stock.quantity}</td>
+                    <td>{stock.allocatedDept}</td>
+                    <td>{stock.totalAmount}</td>
+                    <td>{stock.roomNo}</td>
+                    <td>{stock.vendorName}</td>
+                    <td>{stock.purpose}</td>
+                    <td>
+                      {stock.bills ? (
+                        <a href={stock.bills} target="_blank" rel="noopener noreferrer">
+                          View Invoice
+                        </a>
+                      ) : (
+                        "No Invoice"
+                      )}
+                    </td>
+                    <td>{stock.hodApprovalStatus}</td>
+                    <td>{stock.principalApprovalStatus}</td>
+                    <td>{stock.directorApprovalStatus}</td>
+
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -501,7 +511,7 @@ function PurchaseInCharge() {
                       <td>{stock.rejectionReason}</td>
                       <td>
                         {
-                          <button type="button" onClick={() => handleEdit(stock)}>EDIT STOCK</button>
+                         <button className="edit-btn" type="button" onClick={() => handleEdit(stock)}>EDIT STOCK</button>
                         }
                       </td>
                     </tr>
@@ -516,7 +526,7 @@ function PurchaseInCharge() {
         {
           selectedOption === 'Fetch Stocks' && (
             <>
-              <StockQuery /> 
+              <StockQuery />
             </>
           )
         }

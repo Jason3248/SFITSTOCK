@@ -1,0 +1,219 @@
+/* General styles for the container */
+.purchase-in-charge-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f7f8fa;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Navbar styles */
+.navbar {
+    background-color: #f75b41;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar .title {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.navbar button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+.navbar button:hover {
+    color: #f0f0f0;
+}
+
+.navbar .profile {
+    display: flex;
+    align-items: center;
+}
+
+.navbar .profile img {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.navbar .profile-name {
+    font-weight: bold;
+}
+
+/* Content area styles */
+.content {
+    padding: 20px;
+    flex-grow: 1;
+    background-color: #f7f8fa;
+    display: flex;
+    flex-direction: column;
+}
+
+.content h2 {
+    font-size: 24px;
+    color: #e74c3c;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Form styles */
+.stock-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns per row */
+    gap: 50px; /* Space between form fields */
+}
+
+.stock-form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #34495e;
+}
+
+.stock-form input,
+.stock-form select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #bdc3c7;
+    font-size: 14px;
+}
+
+.stock-form input[type="file"] {
+    padding: 5px;
+}
+
+.stock-form button {
+    grid-column: span 3; /* Make the button span across all 3 columns */
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 4px;
+}
+
+.stock-form button:hover {
+    background-color: #9c2315;
+}
+
+/* Table styles */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.styled-table thead {
+    background-color: #e74c3c;
+    color: white;
+    font-weight: bold;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 5px;
+    text-align: center;
+    font-size: small;
+}
+
+.styled-table tbody tr:nth-child(odd) {
+    background-color: #FFDDD9;
+}
+
+.styled-table tbody tr:nth-child(even) {
+    background-color: white;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+.styled-table .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.edit-btn,
+.styled-table .delete-btn {
+    background-color: #e74c3c;
+    color: black;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.styled-table .action-icon {
+    margin: 0 5px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .purchase-in-charge-container {
+        padding: 10px;
+    }
+
+    .styled-table th,
+    .styled-table td {
+        padding: 10px;
+    }
+
+    /* Adjust the form layout on smaller screens */
+    .stock-form {
+        grid-template-columns: 1fr; /* Single column layout for small screens */
+    }
+
+    .stock-form button {
+        grid-column: span 1; /* Button takes full width on smaller screens */
+    }
+}
+
+.sidebar {
+    background-color: #f05a46;
+    width: 50%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    top: 5%;
+}
+
+.sidebarParent {
+    width: 95%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 2%;
+}
+
+button {
+    border: none;
+    background: none;
+    color: rgb(255, 255, 255);
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 0.2px;
+}

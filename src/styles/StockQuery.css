@@ -1,0 +1,161 @@
+/* Base styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0; /* Light background for contrast */
+    color: black; /* Primary text color */
+  }
+  
+  /* Admin Dashboard Container */
+  .stock-query-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Heading */
+  .stock-query-container h2 {
+    font-size: 28px;
+    color: #f05a46;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Search Form */
+  .search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    padding: 20px;
+  }
+  
+  .search-form input,
+  .search-form select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+  
+  .search-form input:focus,
+  .search-form select:focus {
+    border-color: #f05a46;
+    outline: none;
+  }
+  
+  .search-form button {
+    padding: 10px 20px;
+    background-color: #f05a46;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .search-form button:hover {
+    background-color: #d94a3c;
+  }
+  
+  /* Table styles */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  thead {
+    background-color: #f05a46;
+    color: white;
+  }
+  
+  thead th {
+    padding: 10px;
+    text-align: left;
+  }
+  
+  tbody tr {
+    border-bottom: 1px solid #ddd;
+  }
+  
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+  
+  tbody td {
+    padding: 10px;
+    text-align: left;
+  }
+  
+  tbody tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  tbody td button {
+    background-color: #f05a46;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  tbody td button:hover {
+    background-color: #d94a3c;
+  }
+  
+  /* Stock Details section */
+  .stock-details {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stock-details h3 {
+    color: #f05a46;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  /* Export Button */
+  .export-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #f05a46;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .export-button:hover {
+    background-color: #d94a3c;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .search-form {
+      flex-direction: column;
+    }
+  
+    .search-form input,
+    .search-form select {
+      width: 100%;
+    }
+  }
+  

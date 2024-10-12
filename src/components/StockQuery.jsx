@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import '../styles/StockQuery.css';  // Importing the CSS file
 
 const StockQuery = () => {
+  // Defining the state variables for form inputs and results
   const [searchId, setSearchId] = useState('');
   const [allocatedDept, setAllocatedDept] = useState('');
   const [roomNo, setRoomNo] = useState('');
@@ -11,40 +12,42 @@ const StockQuery = () => {
   const [dateOfPurchase, setDateOfPurchase] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [results, setResults] = useState([]);
-  const [selectedStock, setSelectedStock] = useState(null);
-  const [allocatedDepartments, setAllocatedDepartments] = useState([]); // Store the fetched departments
+  const [results, setResults] = useState([]); // Defining the state for search results
+  const [selectedStock, setSelectedStock] = useState(null); // For displaying selected stock details
+  const [allocatedDepartments, setAllocatedDepartments] = useState([]); // Allocated departments state
 
-  // Fetch config (allocated departments)
-  const fetchConfig = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/api/admin/config');
-      setAllocatedDepartments(res.data.allocatedDept || []); // Set fetched allocated departments
-    } catch (err) {
-      console.error('Error fetching config', err);
-    }
-  };
-
+  // Fetching allocated departments on component mount
   useEffect(() => {
-    fetchConfig(); // Fetch allocated departments on component mount
+    const fetchConfig = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/admin/config');
+        setAllocatedDepartments(res.data.allocatedDept || []); // Populate departments dropdown
+      } catch (err) {
+        console.error('Error fetching config', err);
+      }
+    };
+    fetchConfig();
   }, []);
 
+  // Function to handle the search form submission
   const handleSearch = async (e) => {
     e.preventDefault();
     const query = { _id: searchId, allocatedDept, roomNo, specification, quantity, startDate, endDate };
 
     try {
       const res = await axios.post('http://localhost:5000/api/items/search', query);
-      setResults(res.data);
+      setResults(res.data); // Store search results in the results state
     } catch (err) {
       console.error('Error fetching stock:', err);
     }
   };
 
+  // Function to handle viewing stock details
   const handleViewDetails = (stock) => {
-    setSelectedStock(stock); // Show stock details when clicked
+    setSelectedStock(stock); // Set the selected stock details to display
   };
 
+  // Function to export data to Excel
   const handleExportExcel = async () => {
     const query = {};
 
@@ -72,11 +75,9 @@ const StockQuery = () => {
     }
   };
 
-
   return (
     <div>
-      <form onSubmit={handleSearch}>
-        {/* Search form fields */}
+      <form onSubmit={handleSearch} className="search-form">
         <input type="text" placeholder="Search by _id" onChange={(e) => setSearchId(e.target.value)} />
         <select onChange={(e) => setAllocatedDept(e.target.value)}>
           <option value="">Select Department</option>
@@ -95,7 +96,6 @@ const StockQuery = () => {
         <button type="submit">Search</button>
       </form>
 
-      {/* Display results in a table */}
       {results.length > 0 && (
         <table>
           <thead>
@@ -129,54 +129,14 @@ const StockQuery = () => {
         </table>
       )}
 
-      {/* Selected stock details */}
       {selectedStock && (
-        <div>
+        <div className="stock-details">
           <h3>Stock Details</h3>
-          <p>
-            <strong>Stock Unique Identification:</strong> {selectedStock._id}
-          </p>
-          <p>
-            <strong>Department:</strong> {selectedStock.allocatedDept}
-          </p>
-          <p>
-            <strong>Room No:</strong> {selectedStock.roomNo}
-          </p>
-          <p>
-            <strong>Specification:</strong> {selectedStock.specification}
-          </p>
-          <p>
-            <strong>Batch No:</strong> {selectedStock.batchNo}
-          </p>
-          <p>
-            <strong>Quantity ID:</strong> {selectedStock.quantity}
-          </p>
-          <p>
-            <strong>Date of Purchase:</strong> {selectedStock.dateOfPurchase}
-          </p>
-          <p>
-            <strong>Financial Year:</strong> {selectedStock.financialYear}
-          </p>
-          <p>
-            <strong>Total Amount:</strong> {selectedStock.totalAmount}
-          </p>
-          <p>
-            <strong>Invoice:</strong>{' '}
-            {selectedStock.bills ? (
-              <a href={selectedStock.bills} target="_blank" rel="noopener noreferrer">
-                View Invoice
-              </a>
-            ) : (
-              'No Invoice'
-            )}
-          </p>
-          <p>
-            <strong>Vendor Name:</strong> {selectedStock.vendorName}
-          </p>
+          {/* Display selected stock details */}
         </div>
       )}
 
-      <button onClick={handleExportExcel}>Export to Excel</button>
+      <button onClick={handleExportExcel} className="export-button">Export to Excel</button>
     </div>
   );
 };

@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "../styles/adminmanagement.css"; // Import your updated CSS
 
 const AdminManagement = () => {
   const [assetHeads, setAssetHeads] = useState([]);
@@ -22,46 +22,41 @@ const AdminManagement = () => {
     fetchValues();
   }, []);
 
-  // Add new asset head
   const handleAddAssetHead = async () => {
     if (newAssetHead.trim()) {
       const updatedAssetHeads = [...assetHeads, newAssetHead];
       setAssetHeads(updatedAssetHeads);
-      setNewAssetHead('');
+      setNewAssetHead("");
       await updateConfig(updatedAssetHeads, allocatedDepartments);
     }
   };
 
-  // Add new allocated department
   const handleAddAllocatedDept = async () => {
     if (newAllocatedDept.trim()) {
       const updatedAllocatedDepts = [...allocatedDepartments, newAllocatedDept];
       setAllocatedDepartments(updatedAllocatedDepts);
-      setNewAllocatedDept('');
+      setNewAllocatedDept("");
       await updateConfig(assetHeads, updatedAllocatedDepts);
     }
   };
 
-  // Delete asset head
   const handleDeleteAssetHead = async (head) => {
-    const updatedAssetHeads = assetHeads.filter(h => h !== head);
+    const updatedAssetHeads = assetHeads.filter((h) => h !== head);
     setAssetHeads(updatedAssetHeads);
     await updateConfig(updatedAssetHeads, allocatedDepartments);
   };
 
-  // Delete allocated department
   const handleDeleteAllocatedDept = async (dept) => {
-    const updatedAllocatedDepts = allocatedDepartments.filter(d => d !== dept);
+    const updatedAllocatedDepts = allocatedDepartments.filter((d) => d !== dept);
     setAllocatedDepartments(updatedAllocatedDepts);
     await updateConfig(assetHeads, updatedAllocatedDepts);
   };
 
-  // Update config on the server
   const updateConfig = async (updatedAssetHeads, updatedAllocatedDepts) => {
     try {
       await axios.put("http://localhost:5000/api/admin/update-config", {
         assetHeads: updatedAssetHeads,
-        allocatedDept: updatedAllocatedDepts
+        allocatedDept: updatedAllocatedDepts,
       });
     } catch (error) {
       console.error("Error updating config:", error);
@@ -69,38 +64,62 @@ const AdminManagement = () => {
   };
 
   return (
-    <div>
-      <h2>Manage Asset Heads</h2>
-      <input 
-        type="text" 
-        value={newAssetHead} 
-        onChange={(e) => setNewAssetHead(e.target.value)} 
-        placeholder="Add new Asset Head" 
-      />
-      <button onClick={handleAddAssetHead}>Add</button>
-      <ul>
-        {assetHeads.map((head) => (
-          <li key={head}>
-            {head} <button onClick={() => handleDeleteAssetHead(head)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+    <div className="admin-management-container">
+      <h1 className="admin-dashboard-heading">Admin Dashboard</h1> {/* Added Heading */}
+      
+      <div className="section-wrapper">
+        <div className="section">
+          <h2 className="section-title">Manage Asset Heads</h2>
+          <div className="input-container">
+            <input
+              type="text"
+              value={newAssetHead}
+              onChange={(e) => setNewAssetHead(e.target.value)}
+              className="input-field"
+              placeholder="Add new Asset Head"
+            />
+            <button onClick={handleAddAssetHead} className="add-button">
+              Add
+            </button>
+          </div>
+          <ul className="list">
+            {assetHeads.map((head) => (
+              <li key={head} className="list-item">
+                {head}{" "}
+                <button onClick={() => handleDeleteAssetHead(head)} className="delete-button">
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <h2>Manage Allocated Departments</h2>
-      <input 
-        type="text" 
-        value={newAllocatedDept} 
-        onChange={(e) => setNewAllocatedDept(e.target.value)} 
-        placeholder="Add new Allocated Department" 
-      />
-      <button onClick={handleAddAllocatedDept}>Add</button>
-      <ul>
-        {allocatedDepartments.map((dept) => (
-          <li key={dept}>
-            {dept} <button onClick={() => handleDeleteAllocatedDept(dept)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+        <div className="section">
+          <h2 className="section-title">Manage Allocated Departments</h2>
+          <div className="input-container">
+            <input
+              type="text"
+              value={newAllocatedDept}
+              onChange={(e) => setNewAllocatedDept(e.target.value)}
+              className="input-field"
+              placeholder="Add new Allocated Department"
+            />
+            <button onClick={handleAddAllocatedDept} className="add-button">
+              Add
+            </button>
+          </div>
+          <ul className="list">
+            {allocatedDepartments.map((dept) => (
+              <li key={dept} className="list-item">
+                {dept}{" "}
+                <button onClick={() => handleDeleteAllocatedDept(dept)} className="delete-button">
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 };
