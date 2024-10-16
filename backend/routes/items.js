@@ -67,7 +67,68 @@ router.post('/post', async (req, res) => {
   }
 });
 
+router.get('/groupStocks', async (req, res) => {
+  try {
+    const groupedStocks = await stock.aggregate([
+      {
+        $group: {
+          _id: {
+          
+            assetHeads: "$assetHeads",
+            allocatedDept: "$allocatedDept",
+            batchNo: "$batchNo",
+            vendorName: "$vendorName",
+            quantity: "$quantity",
+            bills: "$bills",
+            purpose: "$purpose",
+            roomNo: "$roomNo",
+            totalAmount: "$totalAmount",
+            financialYear: "$financialYear",
+            batchNo: "$batchNo",
+            specification: "$specification",
+            dateOfPurchase: "$dateOfPurchase",
+            vendorName: "$vendorName"
+          },
+          totalQuantity: { $sum: 1 }, // Counting all documents with the same group key
+          details: { $push: "$$ROOT" } // Collecting all individual stock documents
+        }
+      }
+    ]);
+    res.json(groupedStocks);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+})
 
+router.get('/groupApprovedStocks', async (req, res) => {
+  try {
+    const groupedStocks = await approvedStock.aggregate([
+      {
+        $group: {
+          _id: {
+
+            assetHeads: "$assetHeads",
+            allocatedDept: "$allocatedDept",
+            batchNo: "$batchNo",
+            vendorName: "$vendorName",
+            roomNo: "$roomNo",
+            totalAmount: "$totalAmount",
+            financialYear: "$financialYear",
+            batchNo: "$batchNo",
+            specification: "$specification",
+            dateOfPurchase: "$dateOfPurchase",
+            vendorName: "$vendorName"
+          },
+          totalQuantity: { $sum: 1 }, // Counting all documents with the same group key
+          details: { $push: "$$ROOT" } // Collecting all individual stock documents
+        }
+      }
+    ]);
+    res.json(groupedStocks);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+})
 router.get('/get', async (req, res) => {
   try {
     const items = await stock.find();
@@ -561,7 +622,7 @@ router.post('/export-excel', async (req, res) => {
     const worksheetData = [
       ['ST. FRANCIS INSTITUTE OF TECHNOLOGY'], // Heading
       ['Stock Verification Report'], // Sub-heading
-      [`Room No: ${roomNo || 'All'}`], // Room number dynamically populated
+      [`Room No: ${roomNo || 'Not Specified'}`], // Room number dynamically populated
       [`Date of Report: ${currentDate}`], // Date of download
       [], // Empty row for separation
       ['Allocated Dept', 'Room No', 'Specification', 'Quantity', 'Date of Purchase', 'Vendor Name', 'Total Amount'], // Column headers

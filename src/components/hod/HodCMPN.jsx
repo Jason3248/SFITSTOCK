@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import StockQuery from '../StockQuery';
-import '../styles/hodcmpn.css';
+//import '../styles/hodcmpn.css';
 
 function HodCMPN() {
   const [stocks, setStocks] = useState([]);
@@ -47,8 +47,9 @@ function HodCMPN() {
     <div className="App">
       {/* Sidebar Navigation */}
       <div className="navbarParent">
-        <div className="nav-item" onClick={() => setSelectedOptions('Main Page')}>View Stocks</div>
-        <div className="nav-item" onClick={() => setSelectedOptions('Fetch Stocks')}>Fetch Stocks</div>
+        <div className="nav-item" >
+          <button onClick={() => setSelectedOptions('Main Page')}>View Stocks</button></div>
+        <div className="nav-item" > <button onClick={() => setSelectedOptions('Fetch Stocks')}>Fetch Stocks</button> </div>
       </div>
 
       <div className="content">
