@@ -8,19 +8,19 @@ const Navbar = () => {
 
   useEffect(() => {
     const auth = getAuth();
-    // Listening for the auth state change
+   
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // If a user is logged in, retrieve the display name or email
+
         const displayName = user.displayName || user.email;
         setUsername(displayName);
       } else {
-        // If no user is logged in, you can set it to a default or empty
+     
         setUsername('username');
       }
     });
 
-    return () => unsubscribe(); // Clean up the listener on unmount
+    return () => unsubscribe(); 
   }, []);
 
   return (

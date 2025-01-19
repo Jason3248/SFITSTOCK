@@ -37,14 +37,6 @@ const Profile = () => {
           />
         </div>
         <div>
-          <label>PID:</label>
-          <input
-            type="text"
-            value={pid}
-            onChange={(e) => setPid(e.target.value)}
-          />
-        </div>
-        <div>
           <label>Current Password:</label>
           <input
             type="password"

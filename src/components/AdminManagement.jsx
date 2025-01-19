@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/adminmanagement.css"; // Import your updated CSS
@@ -7,6 +8,12 @@ const AdminManagement = () => {
   const [allocatedDepartments, setAllocatedDepartments] = useState([]);
   const [newAssetHead, setNewAssetHead] = useState("");
   const [newAllocatedDept, setNewAllocatedDept] = useState("");
+
+  // State for creating HOD
+  const [hodName, setHodName] = useState("");
+  const [hodEmail, setHodEmail] = useState("");
+  const [hodPassword, setHodPassword] = useState("");
+  const [hodDepartment, setHodDepartment] = useState("");
 
   const fetchValues = async () => {
     try {
@@ -60,6 +67,30 @@ const AdminManagement = () => {
       });
     } catch (error) {
       console.error("Error updating config:", error);
+    }
+  };
+
+  // Function to create a new HOD
+  const handleCreateHod = async () => {
+    if (hodName && hodEmail && hodPassword && hodDepartment) {
+      try {
+        const response = await axios.post("http://localhost:5000/api/admin/createuser", {
+          name: hodName,
+          email: hodEmail,
+          password: hodPassword,
+          userLevel: 2, 
+          userType: "HOD",
+          allocatedDept: hodDepartment,
+        });
+        setHodName("");
+        setHodEmail("");
+        setHodPassword("");
+        setHodDepartment("");
+      } catch (error) {
+        console.error("Error creating HOD:", error);
+      }
+    } else {
+      console.error("Please fill all fields");
     }
   };
 
@@ -119,9 +150,54 @@ const AdminManagement = () => {
             ))}
           </ul>
         </div>
+        
+        {/* Section to Create HOD */}
+        <div className="section">
+          <h2 className="section-title">Create New HOD</h2>
+          <div className="input-container">
+            <input
+              type="text"
+              value={hodName}
+              onChange={(e) => setHodName(e.target.value)}
+              className="input-field"
+              placeholder="Enter HOD Name"
+            />
+            <input
+              type="email"
+              value={hodEmail}
+              onChange={(e) => setHodEmail(e.target.value)}
+              className="input-field"
+              placeholder="Enter HOD Email"
+            />
+            <input
+              type="password"
+              value={hodPassword}
+              onChange={(e) => setHodPassword(e.target.value)}
+              className="input-field"
+              placeholder="Enter HOD Password"
+            />
+    
+            <select
+              value={hodDepartment}
+              onChange={(e) => setHodDepartment(e.target.value)}
+              className="input-field"
+            >
+              <option value="">Select Department</option>
+              {allocatedDepartments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+            <button onClick={handleCreateHod} className="add-button">
+              Create HOD
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 export default AdminManagement;
+

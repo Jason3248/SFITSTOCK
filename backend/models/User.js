@@ -21,9 +21,7 @@ const UserSchema = new Schema({
     sparse: true
   },
   pid: {
-    type: String,
-    required: true,
-    unique: true
+    type: String
   },
   userLevel: {
     type: Number,

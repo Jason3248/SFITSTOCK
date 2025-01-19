@@ -192,21 +192,23 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
-router.get('/approve/aiml', async (req, res) => {
+
+router.get('/approve/:department',async (req, res) => {
   try {
-    const aimlStocks = await stock.find({ allocatedDept: 'AIML' });
-    res.json(aimlStocks);
-  } catch (err) {
+    const department = req.params.department;
+    const stocks = await stock.find({ allocatedDept: department});
+    res.json(stocks);
+  } catch (error) {
     res.status(500).send('Server error');
   }
 });
 
-router.put('/approve/aiml/:id', async (req, res) => {
-  try {
-    const { hodApprovalStatus, rejectionReason } = req.body;
-    const stockId = decodeURIComponent(req.params.id); // Decode the _id
-    console.log('Decoded Stock ID:', stockId);
+router.put('/approve/:department/:id', async (req, res) => {
+  const { department, id } = req.params;
+  const { hodApprovalStatus, rejectionReason } = req.body;
+  const stockId = decodeURIComponent(id); // Decode the _id
 
+  try {
     const update = { hodApprovalStatus };
     if (hodApprovalStatus === 'rejected') {
       update.rejectedBy = 'HOD';
@@ -216,9 +218,8 @@ router.put('/approve/aiml/:id', async (req, res) => {
       update.rejectionReason = '';
     }
 
-    // Use findOneAndUpdate with the decoded custom _id
     const updatedStock = await stock.findOneAndUpdate(
-      { _id: stockId },
+      { _id: stockId, allocatedDept: department },
       update,
       { new: true }
     );
@@ -233,7 +234,6 @@ router.put('/approve/aiml/:id', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 
 router.get('/approve/cmpn', async (req, res) => {
   try {
@@ -277,176 +277,6 @@ router.put('/approve/cmpn/:id', async (req, res) => {
   }
 });
 
-
-
-router.get('/approve/inft', async (req, res) => {
-  try {
-    const cseStocks = await stock.find({ allocatedDept: 'INFT' });
-    res.json(cseStocks);
-  } catch (err) {
-    res.status(500).send('Server error');
-  }
-});
-
-router.put('/approve/inft/:id', async (req, res) => {
-  try {
-    const { hodApprovalStatus, rejectionReason } = req.body;
-    const stockId = decodeURIComponent(req.params.id); // Decode the _id
-    console.log('Decoded Stock ID:', stockId);
-
-    const update = { hodApprovalStatus };
-    if (hodApprovalStatus === 'rejected') {
-      update.rejectedBy = 'HOD';
-      update.rejectionReason = rejectionReason;
-    } else {
-      update.rejectedBy = '';
-      update.rejectionReason = '';
-    }
-
-    const updatedStock = await stock.findOneAndUpdate(
-      { _id: stockId },
-      update,
-      { new: true }
-    );
-
-    if (!updatedStock) {
-      return res.status(404).send('Stock not found');
-    }
-
-    res.json(updatedStock);
-  } catch (err) {
-    console.error('Error updating stock approval:', err);
-    res.status(500).send('Server error');
-  }
-});
-
-
-router.get('/approve/extc', async (req, res) => {
-  try {
-    const aimlStocks = await stock.find({ allocatedDept: 'EXTC' });
-    res.json(aimlStocks);
-  } catch (err) {
-    res.status(500).send('Server error');
-  }
-});
-
-router.put('/approve/extc/:id', async (req, res) => {
-  try {
-    const { hodApprovalStatus, rejectionReason } = req.body;
-    const stockId = decodeURIComponent(req.params.id); // Decode the _id
-    console.log('Decoded Stock ID:', stockId);
-
-    const update = { hodApprovalStatus };
-    if (hodApprovalStatus === 'rejected') {
-      update.rejectedBy = 'HOD';
-      update.rejectionReason = rejectionReason;
-    } else {
-      update.rejectedBy = '';
-      update.rejectionReason = '';
-    }
-
-    // Use findOneAndUpdate with the decoded custom _id
-    const updatedStock = await stock.findOneAndUpdate(
-      { _id: stockId },
-      update,
-      { new: true }
-    );
-
-    if (!updatedStock) {
-      return res.status(404).send('Stock not found');
-    }
-
-    res.json(updatedStock);
-  } catch (err) {
-    console.error('Error updating stock approval:', err);
-    res.status(500).send('Server error');
-  }
-});
-
-
-router.get('/approve/ecs', async (req, res) => {
-  try {
-    const aimlStocks = await stock.find({ allocatedDept: 'ECS' });
-    res.json(aimlStocks);
-  } catch (err) {
-    res.status(500).send('Server error');
-  }
-});
-
-router.put('/approve/ecs/:id', async (req, res) => {
-  try {
-    const { hodApprovalStatus, rejectionReason } = req.body;
-    const stockId = decodeURIComponent(req.params.id); // Decode the _id
-    console.log('Decoded Stock ID:', stockId);
-
-    const update = { hodApprovalStatus };
-    if (hodApprovalStatus === 'rejected') {
-      update.rejectedBy = 'HOD';
-      update.rejectionReason = rejectionReason;
-    } else {
-      update.rejectedBy = '';
-      update.rejectionReason = '';
-    }
-
-    const updatedStock = await stock.findOneAndUpdate(
-      { _id: stockId },
-      update,
-      { new: true }
-    );
-
-    if (!updatedStock) {
-      return res.status(404).send('Stock not found');
-    }
-
-    res.json(updatedStock);
-  } catch (err) {
-    console.error('Error updating stock approval:', err);
-    res.status(500).send('Server error');
-  }
-});
-
-router.get('/approve/elec', async (req, res) => {
-  try {
-    const aimlStocks = await stock.find({ allocatedDept: 'ELEC' });
-    res.json(aimlStocks);
-  } catch (err) {
-    res.status(500).send('Server error');
-  }
-});
-
-router.put('/approve/elec/:id', async (req, res) => {
-  try {
-    const { hodApprovalStatus, rejectionReason } = req.body;
-    const stockId = decodeURIComponent(req.params.id); // Decode the _id
-    console.log('Decoded Stock ID:', stockId);
-
-    const update = { hodApprovalStatus };
-    if (hodApprovalStatus === 'rejected') {
-      update.rejectedBy = 'HOD';
-      update.rejectionReason = rejectionReason;
-    } else {
-      update.rejectedBy = '';
-      update.rejectionReason = '';
-    }
-
-    const updatedStock = await stock.findOneAndUpdate(
-      { _id: stockId },
-      update,
-      { new: true }
-    );
-
-    if (!updatedStock) {
-      return res.status(404).send('Stock not found');
-    }
-
-    res.json(updatedStock);
-  } catch (err) {
-    console.error('Error updating stock approval:', err);
-    res.status(500).send('Server error');
-  }
-});
-
-
 router.get('/principal-pending', async (req, res) => {
   try {
     const items = await stock.find({
@@ -460,6 +290,16 @@ router.get('/principal-pending', async (req, res) => {
   }
 });
 
+//added 19-Jan-25
+router.get('/nondept-stocks', async(req, res, next) => {
+  try {
+    const items = await stock.find({
+      allocatedDept: 'EXAM CELL'
+    })
+  } catch (error) {
+    
+  }
+})
 
 router.put('/principal/:id', async (req, res) => {
   try {

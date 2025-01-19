@@ -64,57 +64,6 @@ router.post('/createuser', [
     }
 })
 
-/*
-// ROUTE 2: Authenticate a User using: POST "/api/auth/login". No login required
-router.post('/login', [
-    body('email', 'Enter a valid Email').isEmail(),
-    body('password', 'Password cannot be Empty').exists(),
-], async (req, res) => {
-
-
-    console.log(req.body);
-    let success = false;
-    // If there are errors, return Bad request and the errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { email, password } = req.body;
-    try {
-
-        let user = await User.findOne({ email });
-
-        if (!user) {
-            success = false
-            return res.status(400).json({ error: "Please try to login with correct credentials" });
-        }
-
-        // const passwordCompare = await bcrypt.compare(password, user.password);
-        // if (!passwordCompare) {
-        //     success = false
-        //     return res.status(400).json({ success, error: "Please try to login with correct credentials" });
-        // }
-
-        const data = {
-            user: {
-                id: user._id
-            }
-        }
-        const authtoken = jwt.sign(data, JWT_SECRET);
-        success = true;
-        res.json({ user, success, authtoken })
-
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).send("Internal Server Error");
-    }
-
-
-});
-*/
-
-// ROUTE 3: Get loggedin User Details using: POST "/api/auth/getuser". Login required
 router.post('/getuser', fetchuser, async (req, res) => {
 
     try {
@@ -126,41 +75,7 @@ router.post('/getuser', fetchuser, async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 })
-/*
-//Todays route
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      // Find the user by email
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ message: 'Invalid email or password' });
-      }
-  
-      // Check if the password is correct
-      const isMatch = await user.comparePassword(password);
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid email or password' });
-      }
-  
-      // Create a JWT token
-      const token = jwt.sign(
-        { userId: user._id, userLevel: user.userLevel },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' } // Token expires in 1 hour
-      );
-  
-      // Return the token and userLevel
-      res.json({
-        token,
-        userLevel: user.userLevel,
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
-*/
+
   router.post('/login', async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -194,43 +109,7 @@ router.post('/login', async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   });
-/*
-  router.put('/update-credentials', authMiddleware(), async (req, res) => {
-    const { email, currentPassword, newPassword } = req.body;
-    const userId = req.user.id;
-  
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Verify current password
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Current password is incorrect' });
-      }
-  
-      // Update email if provided
-      if (email) {
-        user.email = email;
-      }
-  
-      // Update password if new password is provided
-      if (newPassword) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(newPassword, salt);
-      }
-  
-      await user.save();
-  
-      res.json({ message: 'Profile updated successfully' });
-    } catch (error) {
-      console.error('Error updating credentials:', error);
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
-  */
+
   router.put('/update-credentials', authMiddleware(), async (req, res) => {
     const { email, currentPassword, newPassword, pid } = req.body;
     const userId = req.user.id;

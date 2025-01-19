@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import StockQuery from "./StockQuery";
-import '../styles/princiapalapproval.css';  
+import '../styles/principalapproval.css';  
 
 function PrincipalApproval() {
   const [stocks, setStocks] = useState([]);
   const [rejectionReason, setRejectionReason] = useState('');
   const [selectedOption, setSelectedOption] = useState('Main Page');
 
-  // Fetch pending stock items for Principal approval
+  
   const fetchPendingStocks = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/items/principal-pending");
@@ -22,7 +22,7 @@ function PrincipalApproval() {
     fetchPendingStocks();
   }, []);
 
-  // Handle approval or rejection of a stock item
+ 
   const handleApproval = async (id, status) => {
     let reason = '';
     if (status === 'rejected') {
@@ -35,7 +35,7 @@ function PrincipalApproval() {
         principalApprovalStatus: status,
         rejectionReason: reason
       });
-      fetchPendingStocks();  // Refresh the list after approval action
+      fetchPendingStocks();  
     } catch (err) {
       console.error("Error updating Principal approval status", err);
     }

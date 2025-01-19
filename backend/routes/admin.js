@@ -6,7 +6,9 @@ const router = express.Router();
 const adminAuth = require('../middleware/adminAuth');
 const Stock = require('../models/stock'); 
 const Config = require('../models/config');
-
+const User = require('../models/User');
+const { body, validationResult } = require('express-validator');
+const JWT_SECRET = process.env.JWT_SECRET;
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -21,73 +23,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Failed to login' });
   }
 });
-/*
-router.get('/assetHeads', async (req, res) => {
-  try {
-    const assetHeads = await Stock.find().distinct('assetHeads');
-    res.json(assetHeads);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
-// Fetch all allocated departments
-router.get('/allocatedDepartments', async (req, res) => {
-  try {
-    const allocatedDepartments = await Stock.find().distinct('allocatedDept');
-    res.json(allocatedDepartments);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Add a new asset head
-router.post('/assetHeads', async (req, res) => {
-  const { name } = req.body;
-  try {
-    // Update all documents to include the new asset head
-    await Stock.updateMany({}, { $addToSet: { assetHeads: name } });
-    res.status(201).json({ message: 'Asset head added successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Add a new allocated department
-router.post('/allocatedDepartments', async (req, res) => {
-  const { name } = req.body;
-  try {
-    // Update all documents to include the new allocated department
-    await Stock.updateMany({}, { $addToSet: { allocatedDept: name } });
-    res.status(201).json({ message: 'Allocated department added successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Delete an asset head
-router.delete('/assetHeads/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    await Stock.updateMany({}, { $pull: { assetHeads: id } });
-    res.json({ message: 'Asset head deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Delete an allocated department
-router.delete('/allocatedDepartments/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    await Stock.updateMany({}, { $pull: { allocatedDept: id } });
-    res.json({ message: 'Allocated department deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-*/
-// Add this to your admin routes file
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -107,6 +43,63 @@ router.post('/register', async (req, res) => {
     res.status(500).json({ error: 'Failed to create admin' });
   }
 });
+
+router.post('/createuser', [
+  body('name', 'Enter a valid Name').isLength({ min: 3 }),
+  body('email', 'Enter a valid Email').isEmail(),
+  body('password', 'Password must be at least 8 characters').isLength({ min: 8 })
+], async (req, res) => {
+  console.log(req.body);
+  
+  console.log("New HOD Dept:", req.body.allocatedDept);
+  console.log("New HOD Name:", req.body.name);
+  console.log("New HOD email", req.body.email);
+  console.log("Password", req.body.password);
+  
+  
+  
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+      // Check whether the user with this email exists already
+      let user = await User.findOne({ email: req.body.email });
+      if (user) {
+          return res.status(400).json({ error: "A user with this Email already exists! Please try another Email or change password." });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+      // Create a new user (Assign `userLevel: 2` if it's HOD)
+      user = await User.create({
+          name: req.body.name,
+          password: hashedPassword,
+          email: req.body.email,
+          
+          userLevel: req.body.userType === 'HOD' ? 2 : req.body.userLevel,
+          userType: req.body.userType,
+          department: req.body.allocatedDept,
+          labNo: req.body.labNo,
+      });
+
+      const data = {
+          user: {
+              id: user._id,
+              email: user.email,
+          }
+      };
+
+      const authToken = jwt.sign(data, JWT_SECRET);
+      res.json({ authToken });
+  } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Internal Server Error!");
+  }
+});
+
 
 router.get('/config', async (req, res) => {
   try {

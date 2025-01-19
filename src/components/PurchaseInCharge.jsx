@@ -5,6 +5,7 @@ import { storage } from "../firebaseConfig"; // Import Firebase storage
 import StockQuery from "./StockQuery";
 import "../styles/PurchaseInCharge.css"
 import Profile from './Profile';
+
 function PurchaseInCharge() {
   const [stocks, setStocks] = useState([]);
   const [approvedStocks, setApprovedStocks] = useState([]);
@@ -84,6 +85,8 @@ const fetchStocks = async () => {
     try {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadUrl = await getDownloadURL(snapshot.ref);
+      console.log("DownloadURL", downloadUrl);
+      
       return downloadUrl; // Return the download URL for use
     } catch (error) {
       console.error("File upload failed", error);
@@ -96,7 +99,9 @@ const fetchStocks = async () => {
     try {
       let uploadedBillUrl = "";
       if (file) {
-        uploadedBillUrl = await uploadFile(); // Get the uploaded file URL
+        uploadedBillUrl = await uploadFile();
+        console.log("UploadedBillURL", uploadedBillUrl);
+         // Get the uploaded file URL
       }
       // Ensure the correct bills URL is used
       if (editId) {
@@ -474,7 +479,7 @@ const fetchStocks = async () => {
                     )}
                      <tr>
                         <td colSpan="16">
-                          <button onClick={() => addAllApprovedStocksToDatabase(group)} style={{ marginTop: '10px' }}>Add Only Approved Stocks</button>
+                          <button onClick={() => addAllApprovedStocksToDatabase(group)} style={{ marginTop: '10px' }}>Add All Approved Stocks</button>
                         </td>
                     </tr>
                   </React.Fragment>

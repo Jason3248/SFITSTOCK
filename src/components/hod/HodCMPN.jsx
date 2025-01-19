@@ -24,7 +24,6 @@ function HodCMPN() {
     fetchStocks();
   }, []);
 
-  // Handle approval or rejection of stocks
   const handleApproval = async (id, status) => {
     let reason = '';
     if (status === 'rejected') {

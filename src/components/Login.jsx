@@ -1,21 +1,48 @@
-import React, { useState } from 'react';
-import { Avatar, Button, TextField, Paper, Typography, Container, Box } from '@mui/material';
-import SfitLogo from './assets/sfit_logo.gif'; // Make sure to import your logo.
+
+import React, { useState, useEffect } from 'react';
+import { Avatar, Button, TextField, Paper, Typography, Container, Box, Radio, FormControlLabel, RadioGroup, FormControl, FormLabel, Select, MenuItem } from '@mui/material';
+import SfitLogo from './assets/sfit_logo.gif'; 
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
-  const [isAdminLogin, setIsAdminLogin] = useState(false); // Toggle between admin and user login
+  const [isAdminLogin, setIsAdminLogin] = useState(false); 
+  const [loginType, setLoginType] = useState('user'); 
+  const [departments, setDepartments] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loginType === 'hod') {
+      fetchDepartments();
+    }
+  }, [loginType]);
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/config'); // Adjust URL for fetching department list
+      const data = await response.json();
+      setDepartments(data.allocatedDept); // Assuming the departments come in a `departments` array
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+    }
+  };
+
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
+
+  const handleDepartmentChange = (e) => {
+    setSelectedDepartment(e.target.value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isAdminLogin) {
       await adminLogin(credentials);
+    } else if (loginType === 'hod') {
+      await hodLogin(credentials);
     } else {
       await userLogin(credentials);
     }
@@ -48,30 +75,12 @@ const Login = () => {
             navigate('/');
             break;
           case 2:
-            navigate('/hodcmpn');
+            navigate('/hodpage');
             break;
           case 3:
-            navigate('/hodinft');
-            break;
-          case 4:
-            navigate('/hodextc');
-            break;
-          case 5:
-            navigate('/hodmech');
-            break;
-          case 6:
-            navigate('/hodelec');
-            break;
-          case 7:
-            navigate('/hodaiml');
-            break;
-          case 8:
-            navigate('/hodecs');
-            break;
-          case 9:
             navigate('/principal');
             break;
-          case 10:
+          case 4:
             navigate('/director');
             break;
           default:
@@ -82,6 +91,37 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Error during user login:', error.message);
+      alert(error.message || 'An error occurred. Please try again.');
+    }
+  };
+
+  const hodLogin = async (credentials) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'HOD login failed!');
+      }
+  
+      const data = await response.json();
+      if (data.token && data.userLevel === 2 && selectedDepartment) {
+        localStorage.setItem('token', data.token);
+        alert('HOD login successful!');
+        
+        // Navigate to HOD page and pass selectedDepartment
+        navigate(`/hodpage`, { state: { department: selectedDepartment } });
+      } else {
+        throw new Error('Login failed! No token or invalid user level received.');
+      }
+    } catch (error) {
+      console.error('Error during HOD login:', error.message);
       alert(error.message || 'An error occurred. Please try again.');
     }
   };
@@ -133,7 +173,21 @@ const Login = () => {
         <Typography component="h1" variant="h5">
           {isAdminLogin ? 'Admin Login' : 'User Login'}
         </Typography>
+
         <Box component="form" sx={{ mt: 2 }} onSubmit={handleSubmit}>
+          <FormControl component="fieldset">
+            <FormLabel component="legend">Login Type</FormLabel>
+            <RadioGroup
+              aria-label="login-type"
+              name="login-type"
+              value={loginType}
+              onChange={(e) => setLoginType(e.target.value)}
+            >
+              <FormControlLabel value="user" control={<Radio />} label="User (PurchaseInCharge, Principal, Director)" />
+              <FormControlLabel value="hod" control={<Radio />} label="HOD" />
+            </RadioGroup>
+          </FormControl>
+
           <TextField
             margin="normal"
             required
@@ -155,7 +209,25 @@ const Login = () => {
             value={credentials.password}
             onChange={handleChange}
           />
+
+          {loginType === 'hod' && (
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <FormLabel>Select Department</FormLabel>
+              <Select
+                value={selectedDepartment}
+                onChange={handleDepartmentChange}
+              >
+                {departments.map((dept) => (
+                  <MenuItem key={dept} value={dept}>
+                    {dept}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+
           {error && <Typography color="error">{error}</Typography>}
+
           <Button
             type="submit"
             fullWidth
@@ -163,9 +235,10 @@ const Login = () => {
             color="primary"
             sx={{ mt: 3, mb: 2, p: 1.5 }}
           >
-            {isAdminLogin ? 'Login as Admin' : 'Login as User'}
+            {isAdminLogin ? 'Login as Admin' : 'Login as User/HOD'}
           </Button>
         </Box>
+
         <Button onClick={() => setIsAdminLogin(!isAdminLogin)} sx={{ mt: 2 }}>
           {isAdminLogin ? 'Login as User' : 'Login as Admin'}
         </Button>
