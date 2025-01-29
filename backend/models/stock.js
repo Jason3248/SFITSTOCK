@@ -55,12 +55,7 @@ const StockSchema = new Schema({
     type: [String],
     default: [],
     required: true
-  },
-  hodApprovalStatus: { type: String, default: 'pending' },
-  principalApprovalStatus: { type: String, default: 'pending'},
-  directorApprovalStatus: { type: String, default: 'pending'},
-  rejectionReason: { type: String, default: '' },
-  rejectedBy: { type: String, default: ''}
+  }
 });
  
 

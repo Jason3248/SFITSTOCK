@@ -55,9 +55,9 @@ const approvedStockSchema = new mongoose.Schema({
     default: ['CMPN','INFT','EXTC','MECH','ELEC', 'AIML', 'ECS'],
     required: true
   },
-  hodApprovalStatus: { type: String, default: 'pending' },
-  principalApprovalStatus: { type: String, default: 'pending'},
-  directorApprovalStatus: { type: String, default: 'pending'}
+  // hodApprovalStatus: { type: String, default: 'pending' },
+  // principalApprovalStatus: { type: String, default: 'pending'},
+  // directorApprovalStatus: { type: String, default: 'pending'}
 });
 
 module.exports = mongoose.model('approvedStock', approvedStockSchema);

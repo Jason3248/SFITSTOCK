@@ -67,6 +67,72 @@ router.post('/post', async (req, res) => {
   }
 });
 
+router.post('/final', async (req, res) => {
+  const {
+    _id,
+    assetHeads,
+    specification,
+    dateOfPurchase,
+    financialYear,
+    batchNo,
+    vendorName,
+    quantity,
+    totalAmount,
+    roomNo,
+    purpose,
+    bills,
+    allocatedDept,
+  } = req.body;
+
+  if (!allocatedDept || !roomNo || !specification || !quantity) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  try {
+    const existingStocks = await stock.find({
+      allocatedDept,
+      roomNo,
+      specification,
+      dateOfPurchase,
+      vendorName,
+    }).sort({ _id: 1 });
+
+    let maxQuantity = 0;
+    if (existingStocks.length > 0) {
+      const lastStock = existingStocks[existingStocks.length - 1];
+      const parts = lastStock._id.split('/');
+      maxQuantity = parseInt(parts[5]);
+    }
+
+    for (let i = 1; i <= quantity; i++) {
+      const newId = `${allocatedDept}/${roomNo}/${specification}/${dateOfPurchase}/${vendorName}/${maxQuantity + i}`;
+      const newStock = new approvedStock({
+        _id: newId,
+        assetHeads,
+        specification,
+        dateOfPurchase,
+        financialYear,
+        batchNo,
+        vendorName,
+        quantity: 1,
+        totalAmount,
+        roomNo,
+        purpose,
+        bills,
+        allocatedDept,
+      });
+
+      await newStock.save();
+    }
+
+    res.status(201).json({ message: `${quantity} stock items added successfully` });
+  } catch (err) {
+    console.error("Error creating stock items:", err);
+    res.status(500).json({ error: 'Failed to create item', details: err.message });
+  }
+});
+
+
 router.get('/groupStocks', async (req, res) => {
   try {
     const groupedStocks = await stock.aggregate([
@@ -193,7 +259,7 @@ router.delete('/delete/:id', async (req, res) => {
 });
 
 
-router.get('/approve/:department',async (req, res) => {
+router.get('/getstocks/:department',async (req, res) => {
   try {
     const department = req.params.department;
     const stocks = await stock.find({ allocatedDept: department});

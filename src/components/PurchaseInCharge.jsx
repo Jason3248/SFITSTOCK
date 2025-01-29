@@ -26,12 +26,12 @@ function PurchaseInCharge() {
     purpose: "",
     financialYear: "",
     bills: "",
-    allocatedDept: "",
-    hodApprovalStatus: "pending",
-    principalApprovalStatus: "pending",
-    directorApprovalStatus: "pending",
-    rejectionReason: '',
-    rejectedBy: ''
+    allocatedDept: ""
+    // hodApprovalStatus: "pending",
+    // principalApprovalStatus: "pending",
+    // directorApprovalStatus: "pending",
+    // rejectionReason: '',
+    // rejectedBy: ''
   });
 
   const [editId, setEditId] = useState(null);
@@ -47,14 +47,14 @@ function PurchaseInCharge() {
     }
   };
 
-const fetchStocks = async () => {
-  try {
-    const res = await axios.get("http://localhost:5000/api/items/groupStocks");
-    setStocks(res.data);  // This will now hold grouped data with details
-  } catch (err) {
-    console.error("Error fetching items", err);
-  }
-};
+// const fetchStocks = async () => {
+//   try {
+//     const res = await axios.get("http://localhost:5000/api/items/groupStocks");
+//     setStocks(res.data);  // This will now hold grouped data with details
+//   } catch (err) {
+//     console.error("Error fetching items", err);
+//   }
+// };
 
   const fetchApprovedStocks = async () => {
     try {
@@ -66,7 +66,7 @@ const fetchStocks = async () => {
   };
 
   useEffect(() => {
-    fetchStocks();
+    // fetchStocks();
     fetchApprovedStocks();
     fetchConfig(); // Load asset heads and allocated departments from config
   }, []);
@@ -114,14 +114,14 @@ const fetchStocks = async () => {
           }
         );
       } else {
-        await axios.post("http://localhost:5000/api/items/post", {
+        await axios.post("http://localhost:5000/api/items/final", {
           ...stockData,
           bills: uploadedBillUrl, // Set the bill file URL
         });
       }
 
       setEditId(null);
-      fetchStocks();
+      // fetchStocks();
       setStockData({
         _id: "",
         assetHeads: "",
@@ -135,16 +135,18 @@ const fetchStocks = async () => {
         purpose: "",
         financialYear: "",
         bills: "",
-        allocatedDept: "",
-        hodApprovalStatus: "pending",
-        principalApprovalStatus: "pending",
-        directorApprovalStatus: "pending"
+        allocatedDept: ""
+        // hodApprovalStatus: "pending",
+        // principalApprovalStatus: "pending",
+        // directorApprovalStatus: "pending"
       });
-      setSelectedOption('Stocks for Approval');
+      setSelectedOption('Stocks');
     } catch (error) {
       console.error("Error adding/updating item", error);
     }
   };
+
+
   const handleEdit = (stock) => {
     setStockData({
       assetHeads: stock.assetHeads,
@@ -170,58 +172,58 @@ const fetchStocks = async () => {
     try {
       const encodedId = encodeURIComponent(id);
       await axios.delete(`http://localhost:5000/api/items/delete/${encodedId}`);
-      fetchStocks();
+      // fetchStocks();
     } catch (err) {
       console.error("Error deleting item", err);
     }
   };
-  const rejectedStocks = stocks.filter(
-    (group) =>
-      group.details.some(stock => {
-       return ( stock.hodApprovalStatus === 'rejected' ||
-        stock.principalApprovalStatus === 'rejected' ||
-        stock.directorApprovalStatus === 'rejected')
-      })
+  // const rejectedStocks = stocks.filter(
+  //   (group) =>
+  //     group.details.some(stock => {
+  //      return ( stock.hodApprovalStatus === 'rejected' ||
+  //       stock.principalApprovalStatus === 'rejected' ||
+  //       stock.directorApprovalStatus === 'rejected')
+  //     })
 
-  );
-  const addToFinalDatabase = async (stock) => {
-    try {
-      await axios.post("http://localhost:5000/api/items/add", { _id: stock._id });
-      alert("Stock successfully added to the Final database");
+  // );
+  // const addToFinalDatabase = async (stock) => {
+  //   try {
+  //     await axios.post("http://localhost:5000/api/items/add", { _id: stock._id });
+  //     alert("Stock successfully added to the Final database");
 
-      await axios.put(`http://localhost:5000/api/items/put/${stock._id}`, {
-        ...stock,
-        assessmentStatus: 'completed',
-      });
+  //     await axios.put(`http://localhost:5000/api/items/put/${stock._id}`, {
+  //       ...stock,
+  //       assessmentStatus: 'completed',
+  //     });
 
-      setStocks(stocks.filter((s) => s._id !== stock._id));
-      fetchApprovedStocks();
-    } catch (err) {
-      console.error("Error adding stock to the new database", err);
-    }
-  };
-  const addAllApprovedStocksToDatabase = async (group) => {
-    const allApproved = group.details.every(stock =>
-      stock.hodApprovalStatus === 'approved' &&
-      stock.principalApprovalStatus === 'approved' &&
-      stock.directorApprovalStatus === 'approved'
-    );
+  //     setStocks(stocks.filter((s) => s._id !== stock._id));
+  //     fetchApprovedStocks();
+  //   } catch (err) {
+  //     console.error("Error adding stock to the new database", err);
+  //   }
+  // };
+  // const addAllApprovedStocksToDatabase = async (group) => {
+  //   const allApproved = group.details.every(stock =>
+  //     stock.hodApprovalStatus === 'approved' &&
+  //     stock.principalApprovalStatus === 'approved' &&
+  //     stock.directorApprovalStatus === 'approved'
+  //   );
 
-    if (allApproved) {
-      for (const stock of group.details) {
-        await addToFinalDatabase(stock);
-      }
-    } else {
-      alert("Not all stocks are approved.");
-    }
-  };
-  const toggleDrillDown = (index) => {
-    setStocks((prevStocks) =>
-      prevStocks.map((stock, i) =>
-        i === index ? { ...stock, drillDown: !stock.drillDown } : stock
-      )
-    );
-  };
+  //   if (allApproved) {
+  //     for (const stock of group.details) {
+  //       await addToFinalDatabase(stock);
+  //     }
+  //   } else {
+  //     alert("Not all stocks are approved.");
+  //   }
+  // };
+  // const toggleDrillDown = (index) => {
+  //   setStocks((prevStocks) =>
+  //     prevStocks.map((stock, i) =>
+  //       i === index ? { ...stock, drillDown: !stock.drillDown } : stock
+  //     )
+  //   );
+  // };
   const toggleApprovedDrillDown = (index) => {
     setApprovedStocks((prevStocks) =>
       prevStocks.map((stock, i) =>
@@ -234,11 +236,11 @@ const fetchStocks = async () => {
       <div className="sidebarParent">
         <div className="sidebar">
           <button onClick={() => setSelectedOption('Add Stock')}>Add Stock</button>
-          <button onClick={() => setSelectedOption('Stocks for Approval')}>Stocks for Approval</button>
-          <button onClick={() => setSelectedOption('Approved Stocks')}>Approved Stocks</button>
-          {rejectedStocks.length > 0 && (
+          {/* <button onClick={() => setSelectedOption('Stocks for Approval')}>Stocks for Approval</button> */}
+          <button onClick={() => setSelectedOption('Stocks')}>View Stocks</button>
+          {/* {rejectedStocks.length > 0 && (
             <button onClick={() => setSelectedOption('Rejected Stocks')}>Some Stocks Have Been Rejected.Click to View</button>
-          )}
+          )} */}
           <button onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</button>
           <button onClick={() => setSelectedOption('Update Profile')}>Update Profile</button>
         </div>
@@ -370,7 +372,7 @@ const fetchStocks = async () => {
             </form>
           </div>
         )}
-        {selectedOption === 'Stocks for Approval' && (
+        {/* {selectedOption === 'Stocks for Approval' && (
           <div>
             <h1>Stocks For Approval</h1>
             <table className="styled-table">
@@ -487,8 +489,8 @@ const fetchStocks = async () => {
               </tbody>
             </table>
           </div>
-        )}
-        {selectedOption === 'Approved Stocks' && (
+        )} */}
+        {selectedOption === 'Stocks' && (
           <div>
             <h1>Approved Stock List</h1>
             <table className="styled-table">
@@ -544,9 +546,9 @@ const fetchStocks = async () => {
                                 <th>Room No.</th>
                                 <th>Vendor Name</th>
                                 <th>Invoice</th>
-                                <th>Approval By HOD</th>
+                                {/* <th>Approval By HOD</th>
                                 <th>Approval By Principal</th>
-                                <th>Approval By Director</th>
+                                <th>Approval By Director</th> */}
                               </tr>
                             </thead>
                             <tbody>
@@ -567,9 +569,9 @@ const fetchStocks = async () => {
                                      <a href= {stock.bills} target="_blank" rel="noopener noreferrer">View Invoice</a>
                                     }
                                   </td>
-                                  <td>{stock.hodApprovalStatus}</td>
+                                  {/* <td>{stock.hodApprovalStatus}</td>
                                   <td>{stock.principalApprovalStatus}</td>
-                                  <td>{stock.directorApprovalStatus}</td>
+                                  <td>{stock.directorApprovalStatus}</td> */}
                                 </tr>
                               ))}
                             </tbody>
@@ -584,7 +586,7 @@ const fetchStocks = async () => {
             
           </div>
         )}
-         {selectedOption === 'Rejected Stocks' && (
+         {/* {selectedOption === 'Rejected Stocks' && (
       <div>
         <h1>Rejected Stocks</h1>
         {rejectedStocks.length > 0 ? (
@@ -633,7 +635,7 @@ const fetchStocks = async () => {
           <p>No rejected stocks to display.</p>
         )}
       </div>
-    )}
+    )} */}
         {
           selectedOption === 'Fetch Stocks' && (
             <><StockQuery /></>
