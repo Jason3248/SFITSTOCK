@@ -7,7 +7,7 @@ import "../styles/PurchaseInCharge.css"
 import Profile from './Profile';
 
 function PurchaseInCharge() {
-  const [stocks, setStocks] = useState([]);
+  // const [stocks, setStocks] = useState([]);
   const [approvedStocks, setApprovedStocks] = useState([]);
   const [assetHeads, setAssetHeads] = useState([]);
   const [allocatedDepartments, setAllocatedDepartments] = useState([]);
@@ -27,11 +27,6 @@ function PurchaseInCharge() {
     financialYear: "",
     bills: "",
     allocatedDept: ""
-    // hodApprovalStatus: "pending",
-    // principalApprovalStatus: "pending",
-    // directorApprovalStatus: "pending",
-    // rejectionReason: '',
-    // rejectedBy: ''
   });
 
   const [editId, setEditId] = useState(null);
@@ -46,15 +41,6 @@ function PurchaseInCharge() {
       console.error("Error fetching config", err);
     }
   };
-
-// const fetchStocks = async () => {
-//   try {
-//     const res = await axios.get("http://localhost:5000/api/items/groupStocks");
-//     setStocks(res.data);  // This will now hold grouped data with details
-//   } catch (err) {
-//     console.error("Error fetching items", err);
-//   }
-// };
 
   const fetchApprovedStocks = async () => {
     try {
@@ -101,7 +87,7 @@ function PurchaseInCharge() {
       if (file) {
         uploadedBillUrl = await uploadFile();
         console.log("UploadedBillURL", uploadedBillUrl);
-         // Get the uploaded file URL
+    
       }
       // Ensure the correct bills URL is used
       if (editId) {
@@ -136,9 +122,6 @@ function PurchaseInCharge() {
         financialYear: "",
         bills: "",
         allocatedDept: ""
-        // hodApprovalStatus: "pending",
-        // principalApprovalStatus: "pending",
-        // directorApprovalStatus: "pending"
       });
       setSelectedOption('Stocks');
     } catch (error) {
@@ -161,9 +144,7 @@ function PurchaseInCharge() {
       financialYear: stock.financialYear,
       bills: stock.bills,
       allocatedDept: stock.allocatedDept,
-      hodApprovalStatus: stock.hodApprovalStatus,
-      principalApprovalStatus: stock.principalApprovalStatus,
-      directorApprovalStatus: stock.directorApprovalStatus
+     
     });
     setEditId(stock._id);
     setSelectedOption('Add Stock'); // Redirect to Add Stock to edit
@@ -177,53 +158,8 @@ function PurchaseInCharge() {
       console.error("Error deleting item", err);
     }
   };
-  // const rejectedStocks = stocks.filter(
-  //   (group) =>
-  //     group.details.some(stock => {
-  //      return ( stock.hodApprovalStatus === 'rejected' ||
-  //       stock.principalApprovalStatus === 'rejected' ||
-  //       stock.directorApprovalStatus === 'rejected')
-  //     })
 
-  // );
-  // const addToFinalDatabase = async (stock) => {
-  //   try {
-  //     await axios.post("http://localhost:5000/api/items/add", { _id: stock._id });
-  //     alert("Stock successfully added to the Final database");
 
-  //     await axios.put(`http://localhost:5000/api/items/put/${stock._id}`, {
-  //       ...stock,
-  //       assessmentStatus: 'completed',
-  //     });
-
-  //     setStocks(stocks.filter((s) => s._id !== stock._id));
-  //     fetchApprovedStocks();
-  //   } catch (err) {
-  //     console.error("Error adding stock to the new database", err);
-  //   }
-  // };
-  // const addAllApprovedStocksToDatabase = async (group) => {
-  //   const allApproved = group.details.every(stock =>
-  //     stock.hodApprovalStatus === 'approved' &&
-  //     stock.principalApprovalStatus === 'approved' &&
-  //     stock.directorApprovalStatus === 'approved'
-  //   );
-
-  //   if (allApproved) {
-  //     for (const stock of group.details) {
-  //       await addToFinalDatabase(stock);
-  //     }
-  //   } else {
-  //     alert("Not all stocks are approved.");
-  //   }
-  // };
-  // const toggleDrillDown = (index) => {
-  //   setStocks((prevStocks) =>
-  //     prevStocks.map((stock, i) =>
-  //       i === index ? { ...stock, drillDown: !stock.drillDown } : stock
-  //     )
-  //   );
-  // };
   const toggleApprovedDrillDown = (index) => {
     setApprovedStocks((prevStocks) =>
       prevStocks.map((stock, i) =>
@@ -236,11 +172,7 @@ function PurchaseInCharge() {
       <div className="sidebarParent">
         <div className="sidebar">
           <button onClick={() => setSelectedOption('Add Stock')}>Add Stock</button>
-          {/* <button onClick={() => setSelectedOption('Stocks for Approval')}>Stocks for Approval</button> */}
-          <button onClick={() => setSelectedOption('Stocks')}>View Stocks</button>
-          {/* {rejectedStocks.length > 0 && (
-            <button onClick={() => setSelectedOption('Rejected Stocks')}>Some Stocks Have Been Rejected.Click to View</button>
-          )} */}
+          <button onClick={() => setSelectedOption('Stocks')}>View Stocks</button> 
           <button onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</button>
           <button onClick={() => setSelectedOption('Update Profile')}>Update Profile</button>
         </div>
@@ -372,124 +304,7 @@ function PurchaseInCharge() {
             </form>
           </div>
         )}
-        {/* {selectedOption === 'Stocks for Approval' && (
-          <div>
-            <h1>Stocks For Approval</h1>
-            <table className="styled-table">
-              <thead>
-                <tr>
-                  <th>Asset Head</th>
-                  <th>Type/Specification</th>
-                  <th>Date of Purchase</th>
-                  <th>Financial Year</th>
-                  <th>Batch No</th>
-                  <th>Total Quantity</th>
-                  <th>Department</th>
-                  <th>Amount</th>
-                  <th>Room No.</th>
-                  <th>Vendor Name</th> 
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stocks.map((group, index) => (
-                  <React.Fragment key={index}>
-                    <tr>
-                      <td>{group._id.assetHeads}</td>
-                      <td>{group._id.specification}</td>
-                      <td>{group._id.dateOfPurchase}</td>
-                      <td>{group._id.financialYear}</td>
-                      <td>{group._id.batchNo}</td>
-                      <td>{group.totalQuantity}</td>
-                      <td>{group._id.allocatedDept}</td>
-                      <td>{group._id.totalAmount}</td>
-                      <td>{group._id.roomNo}</td>
-                      <td>{group._id.vendorName}</td>
-                      <td>
-                        <button onClick={() => toggleDrillDown(index)}>
-                          {group.drillDown ? "View Less" : "View All Stocks"}
-                        </button>
-                      </td>
-                      <td>
-
-                      </td>
-                    </tr>
-                    {group.drillDown && (
-                      <tr>
-                        <td colSpan="16">
-                          <table className="drilldown-table">
-                            <thead>
-                              <tr>
-                                <th>Individual Stock Unique ID</th>
-                                <th>Asset Head</th>
-                                <th>Type/Specification</th>
-                                <th>Date of Purchase</th>
-                                <th>Financial Year</th>
-                                <th>Batch No</th>
-                                <th>Total Quantity</th>
-                                <th>Department</th>
-                                <th>Amount</th>
-                                <th>Room No.</th>
-                                <th>Vendor Name</th>
-                                <th>Invoice</th>
-                                <th>Approval By HOD</th>
-                                <th>Approval By Principal</th>
-                                <th>Approval By Director</th>
-                                <th>Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {group.details.map((stock, idx) => (
-                                <tr key={idx}>
-                                  <td>{stock._id}</td>
-                                  <td>{stock.assetHeads}</td>
-                                  <td>{stock.specification}</td>
-                                  <td>{stock.dateOfPurchase}</td>
-                                  <td>{stock.financialYear}</td>
-                                  <td>{stock.batchNo}</td>
-                                  <td>{stock.quantity}</td>
-                                  <td>{stock.allocatedDept}</td>
-                                  <td>{stock.totalAmount}</td>
-                                  <td>{stock.roomNo}</td>
-                                  <td>{stock.vendorName}</td>
-                                  <td>{
-                                     <a href= {stock.bills} target="_blank" rel="noopener noreferrer">View Invoice</a>
-                                    }
-                                  </td>
-                                  <td>{stock.hodApprovalStatus}</td>
-                                  <td>{stock.principalApprovalStatus}</td>
-                                  <td>{stock.directorApprovalStatus}</td>
-                                  <td>
-                              {stock.hodApprovalStatus === 'approved' &&
-                                stock.principalApprovalStatus === 'approved' &&
-                                stock.directorApprovalStatus === 'approved' ? (
-                                <button onClick={() => addToFinalDatabase(stock)}>Add to Database</button>
-                              ) : (
-                                <>
-                                  <button onClick={() => handleEdit(stock)}>Edit</button>
-                                  <button onClick={() => handleDelete(stock._id)}>Delete</button>
-                                </>
-                              )}
-                            </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                      
-                    )}
-                     <tr>
-                        <td colSpan="16">
-                          <button onClick={() => addAllApprovedStocksToDatabase(group)} style={{ marginTop: '10px' }}>Add All Approved Stocks</button>
-                        </td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )} */}
+        
         {selectedOption === 'Stocks' && (
           <div>
             <h1>Approved Stock List</h1>
@@ -546,9 +361,6 @@ function PurchaseInCharge() {
                                 <th>Room No.</th>
                                 <th>Vendor Name</th>
                                 <th>Invoice</th>
-                                {/* <th>Approval By HOD</th>
-                                <th>Approval By Principal</th>
-                                <th>Approval By Director</th> */}
                               </tr>
                             </thead>
                             <tbody>
@@ -569,9 +381,6 @@ function PurchaseInCharge() {
                                      <a href= {stock.bills} target="_blank" rel="noopener noreferrer">View Invoice</a>
                                     }
                                   </td>
-                                  {/* <td>{stock.hodApprovalStatus}</td>
-                                  <td>{stock.principalApprovalStatus}</td>
-                                  <td>{stock.directorApprovalStatus}</td> */}
                                 </tr>
                               ))}
                             </tbody>
@@ -586,56 +395,7 @@ function PurchaseInCharge() {
             
           </div>
         )}
-         {/* {selectedOption === 'Rejected Stocks' && (
-      <div>
-        <h1>Rejected Stocks</h1>
-        {rejectedStocks.length > 0 ? (
-          <table className="styled-table">
-            <thead>
-              <tr>
-                <th>Stock Unique Identification</th>
-                <th>Asset Head</th>
-                <th>Specification</th>
-                <th>Vendor Name</th>
-                <th>Batch No</th>
-                <th>Allocated Dept</th>
-                <th>Date of Purchase</th>
-                <th>Financial Year</th>
-                <th>Rejected By</th>
-                <th>Rejection Reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rejectedStocks.map((group) =>
-                group.details.map((stock) => (
-                  stock.hodApprovalStatus === 'rejected' ||
-                  stock.principalApprovalStatus === 'rejected' ||
-                  stock.directorApprovalStatus === 'rejected' ? (
-                    <tr key={stock._id}>
-                      <td>{stock._id}</td>
-                      <td>{stock.assetHeads}</td>
-                      <td>{stock.specification}</td>
-                      <td>{stock.vendorName}</td>
-                      <td>{stock.batchNo}</td>
-                      <td>{stock.allocatedDept}</td>
-                      <td>{stock.dateOfPurchase}</td>
-                      <td>{stock.financialYear}</td>
-                      <td>{stock.rejectedBy}</td>
-                      <td>{stock.rejectionReason}</td>
-                      <td>
-                        <button className="edit-btn" type="button" onClick={() => handleEdit(stock)}>EDIT STOCK</button>
-                      </td>
-                    </tr>
-                  ) : null
-                ))
-              )}
-            </tbody>
-          </table>
-        ) : (
-          <p>No rejected stocks to display.</p>
-        )}
-      </div>
-    )} */}
+         
         {
           selectedOption === 'Fetch Stocks' && (
             <><StockQuery /></>
