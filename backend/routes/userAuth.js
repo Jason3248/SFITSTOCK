@@ -14,8 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 router.post('/createuser', [
     body('name', 'Enter a valid Name').isLength({ min: 3 }),
     body('email', 'Enter a valid Email').isEmail(),
-    body('password', 'Password must be atleast 8 characters').isLength({ min: 8 }),
-    body('pid', 'Enter a valid pid').isLength({ min: 5 }),
+    body('password', 'Password must be atleast 8 characters').isLength({ min: 8 })
 ], async (req, res) => {
 
     // If there are errors, return Bad request and the errors

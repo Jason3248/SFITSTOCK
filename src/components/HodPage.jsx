@@ -5,6 +5,7 @@ import axios from 'axios';
 import StockQuery from './StockQuery';
 import '../styles/hodPage.css'
 import Profile from './Profile';
+import ViewStocks from './ViewStocks';
 // function HODPage() {
 //   const location = useLocation();
 //   const navigate = useNavigate();
@@ -149,101 +150,50 @@ import Profile from './Profile';
 function HODPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { department } = location.state || {}; // Retrieve department from route state
-
-  const [stocks, setStocks] = useState([]);
-  const [filteredStocks, setFilteredStocks] = useState([]);
+  const { department } = location.state || {}; 
   const [selectedOptions, setSelectedOptions] = useState('');
 
-  // Redirect to login if no department is passed
+ 
   useEffect(() => {
     if (!department) {
       alert('No department found! Redirecting to login page.');
-      navigate('/login'); // Redirect to login if department is not found
-    } else {
-      fetchStocks();
-    }
-  }, [department, navigate]);
+      navigate('/login'); 
+   
+  }}, [department, navigate]);
+
 
   // Fetch stocks for the selected department
-  const fetchStocks = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/api/items/getstocks/${department}`);
-      setStocks(res.data);
-      setFilteredStocks(res.data); // Initialize filteredStocks with all data
-    } catch (err) {
-      console.error("Error fetching items", err);
-    }
-  };
+  // const fetchStocks = async () => {
+  //   try {
+  //     const res = await axios.get(`http://localhost:5000/api/items/getstocks/${department}`);
+  //     setStocks(res.data);
+  //     setFilteredStocks(res.data); // Initialize filteredStocks with all data
+  //   } catch (err) {
+  //     console.error("Error fetching items", err);
+  //   }
+  // };
 
   return (
     <div className="App">
-      {/* Sidebar Navigation */}
+   
       <div className="sidebar">
-        <button onClick={() => setSelectedOptions('Main Page')}>View Stocks</button>
+        <button onClick={() => setSelectedOptions('View Stocks')}>View Stocks</button>
         <button onClick={() => setSelectedOptions('Fetch Stocks')}>Fetch Stocks</button>
         <button onClick={() => setSelectedOptions('Update Profile')}>Update Profile</button>
       </div>
 
       <div className="content">
-        {/* Conditionally render components based on the selected option */}
+        
         {selectedOptions === 'Fetch Stocks' && <StockQuery />}
 
-        {selectedOptions === 'Main Page' && (
-          <>
-            <h1>HOD Page - {department} Department</h1>
-            {filteredStocks.length === 0 ? (
-              <p className="no-stocks-message">No stocks available at the moment.</p>
-            ) : (
-              <table className="stock-table">
-                <thead>
-                  <tr>
-                    <th>Asset Head</th>
-                    <th>Specification</th>
-                    <th>Vendor Name</th>
-                    <th>Quantity</th>
-                    <th>Batch No</th>
-                    <th>Date of Purchase</th>
-                    <th>Total Amount</th>
-                    <th>Room No</th>
-                    <th>Invoice</th>
-                    <th>Department</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStocks.map((stock) => (
-                    <tr key={stock._id}>
-                      <td>{stock.assetHeads}</td>
-                      <td>{stock.specification}</td>
-                      <td>{stock.vendorName}</td>
-                      <td>{stock.quantity}</td>
-                      <td>{stock.batchNo}</td>
-                      <td>{stock.dateOfPurchase}</td>
-                      <td>{stock.totalAmount}</td>
-                      <td>{stock.roomNo}</td>
-                      <td>
-                        {stock.bills ? (
-                          <a href={stock.bills} target="_blank" rel="noopener noreferrer">
-                            View Invoice
-                          </a>
-                        ) : (
-                          "No Invoice"
-                        )}
-                      </td>
-                      <td>{stock.allocatedDept}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </>
-        )}
+        {selectedOptions === 'View Stocks' && <ViewStocks />}
 
         {selectedOptions === 'Update Profile' && <Profile />}
       </div>
     </div>
   );
 }
+
 
 
 export default HODPage;

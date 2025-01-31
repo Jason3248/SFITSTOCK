@@ -22,8 +22,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
-      <Route path="/profile" element={<ProtectedRoute element={Profile} requiredLevel={1} />} />
-      <Route path="/departmentincharge/:department" element={<DepartmentInCharge department={'CMPN'}/>} />
+      <Route path="/profile" element={<ProtectedRoute element={Profile} />} />
       <Route path="/login" element={<Login />} />
       <Route path='/search' element={<StockQuery />} />
       <Route path='/adminlogin' element={<AdminLogin />}/>
@@ -33,6 +32,7 @@ const App = () => {
         <Route path='/hodpage' element={<ProtectedRoute element={<HODPage />} requiredLevel={2}/>} />
         <Route path="/principal" element={<ProtectedRoute element={PrincipalApproval} requiredLevel={3} />} />
         <Route path="/director" element={<ProtectedRoute element={DirectorApproval} requiredLevel={4} />} />
+        <Route path="/department-in-charge" element={<DepartmentInCharge department={"CMPN"}/>}  />
       </Routes>
     </Router>
   );

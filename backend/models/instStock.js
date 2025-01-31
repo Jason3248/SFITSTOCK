@@ -10,6 +10,7 @@ const institutionalStockSchema = new mongoose.Schema({
   financialYear: String,
   batchNo: String,
   totalAmount: Number,
+  individualAmount: Number, 
   bills: String,
   purpose: String,
   allocatedDept: String,  // Assigned department

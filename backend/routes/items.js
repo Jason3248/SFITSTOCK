@@ -8,70 +8,70 @@ const deptStock = require('../models/deptStock')
 const instStock = require('../models/instStock')
 
 
-// router.post('/final', async (req, res) => {
-//   const {
-//     _id,
-//     assetHeads,
-//     specification,
-//     dateOfPurchase,
-//     financialYear,
-//     batchNo,
-//     vendorName,
-//     quantity,
-//     totalAmount,
-//     roomNo,
-//     purpose,
-//     bills,
-//     allocatedDept,
-//   } = req.body;
+router.post('/final', async (req, res) => {
+  const {
+    _id,
+    assetHeads,
+    specification,
+    dateOfPurchase,
+    financialYear,
+    batchNo,
+    vendorName,
+    quantity,
+    totalAmount,
+    roomNo,
+    purpose,
+    bills,
+    allocatedDept,
+  } = req.body;
 
-//   if (!allocatedDept || !roomNo || !specification || !quantity) {
-//     return res.status(400).json({ error: 'All fields are required' });
-//   }
+  if (!allocatedDept || !roomNo || !specification || !quantity) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
 
-//   try {
-//     const existingStocks = await stock.find({
-//       allocatedDept,
-//       roomNo,
-//       specification,
-//       dateOfPurchase,
-//       vendorName,
-//     }).sort({ _id: 1 });
+  try {
+    const existingStocks = await stock.find({
+      allocatedDept,
+      roomNo,
+      specification,
+      dateOfPurchase,
+      vendorName,
+    }).sort({ _id: 1 });
 
-//     let maxQuantity = 0;
-//     if (existingStocks.length > 0) {
-//       const lastStock = existingStocks[existingStocks.length - 1];
-//       const parts = lastStock._id.split('/');
-//       maxQuantity = parseInt(parts[5]);
-//     }
+    let maxQuantity = 0;
+    if (existingStocks.length > 0) {
+      const lastStock = existingStocks[existingStocks.length - 1];
+      const parts = lastStock._id.split('/');
+      maxQuantity = parseInt(parts[5]);
+    }
 
-//     for (let i = 1; i <= quantity; i++) {
-//       const newId = `${allocatedDept}/${roomNo}/${specification}/${dateOfPurchase}/${vendorName}/${maxQuantity + i}`;
-//       const newStock = new approvedStock({
-//         _id: newId,
-//         assetHeads,
-//         specification,
-//         dateOfPurchase,
-//         financialYear,
-//         batchNo,
-//         vendorName,
-//         quantity: 1,
-//         totalAmount,
-//         roomNo,
-//         purpose,
-//         bills,
-//         allocatedDept,
-//       });
+    for (let i = 1; i <= quantity; i++) {
+      const newId = `${allocatedDept}/${roomNo}/${specification}/${dateOfPurchase}/${vendorName}/${maxQuantity + i}`;
+      const newStock = new approvedStock({
+        _id: newId,
+        assetHeads,
+        specification,
+        dateOfPurchase,
+        financialYear,
+        batchNo,
+        vendorName,
+        quantity: 1,
+        totalAmount,
+        roomNo,
+        purpose,
+        bills,
+        allocatedDept,
+      });
 
-//       await newStock.save();
-//     }
+      await newStock.save();
+    }
 
-//     res.status(201).json({ message: `${quantity} stock items added successfully` });
-//   } catch (err) {
-//     console.error("Error creating stock items:", err);
-//     res.status(500).json({ error: 'Failed to create item', details: err.message });
-//   }
-// });
+    res.status(201).json({ message: `${quantity} stock items added successfully` });
+  } catch (err) {
+    console.error("Error creating stock items:", err);
+    res.status(500).json({ error: 'Failed to create item', details: err.message });
+  }
+});
 
 router.get("/department/:department", async (req, res) => {
   try {
@@ -169,6 +169,8 @@ router.post("/uploadStockExcel", async (req, res) => {
         throw new Error("Missing required fields in stock data.");
       }
 
+      const individualAmount = totalAmount / quantity;
+
       let parsedAllocatedDept = [];
       if (stockType === "Departmental Stock") {
         try {
@@ -213,6 +215,7 @@ router.post("/uploadStockExcel", async (req, res) => {
             financialYear,
             batchNo,
             totalAmount,
+            individualAmount,
             bills,
             purpose,
             stockType: "Institutional Stock",
@@ -243,6 +246,7 @@ router.post("/uploadStockExcel", async (req, res) => {
               financialYear,
               batchNo,
               totalAmount,
+              individualAmount,
               bills,
               purpose,
               allocatedDept: department,
@@ -514,6 +518,8 @@ router.post("/addStock", async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    const individualAmount = totalAmount / quantity;
+
     // Store stock in main approvedStock collection
     const newStock = new approvedStock({
       assetHeads,
@@ -528,7 +534,7 @@ router.post("/addStock", async (req, res) => {
       bills,
       allocatedDept: stockType === "Institutional Stock" ? undefined : allocatedDept,
       stockType,
-      roomNo: stockType === "Institutional Stock" ? roomNo : undefined
+      roomNo: stockType === "Institutional Stock" ? roomNo : ""
     });
 
     await newStock.save();
@@ -550,6 +556,7 @@ router.post("/addStock", async (req, res) => {
           financialYear,
           batchNo,
           totalAmount,
+          individualAmount,
           bills,
           purpose,
           stockType: "Institutional Stock",
@@ -585,6 +592,7 @@ router.post("/addStock", async (req, res) => {
             financialYear,
             batchNo,
             totalAmount,
+            individualAmount,
             bills,
             purpose,
             allocatedDept: dept.department,
@@ -1294,30 +1302,206 @@ router.post('/export-excel', async (req, res) => {
   }
 });
 
-router.post('/search', async (req, res) => {
-  const { _id, allocatedDept, roomNo, specification, quantity, startDate, endDate } = req.body;
+// router.post("/search", async (req, res) => {
+//   try {
+//     const { stockType, allocatedDept, specification, startDate, endDate } = req.body;
 
+//     let collection = stockType === "institutional" ? instStock : deptStock;
+
+//     let matchConditions = {};
+//     if (allocatedDept) matchConditions.allocatedDept = allocatedDept;
+//     if (specification) matchConditions.specification = specification;
+//     if (startDate && endDate) {
+//       matchConditions.dateOfPurchase = { $gte: new Date(startDate), $lte: new Date(endDate) };
+//     }
+
+//     // Aggregate stocks by batch entry
+//     const groupedStocks = await collection.aggregate([
+//       { $match: matchConditions },
+//       {
+//         $group: {
+//           _id: {
+//             specification: "$specification",
+//             vendorName: "$vendorName",
+//             batchNo: "$batchNo",
+//             allocatedDept: "$allocatedDept",
+//             dateOfPurchase: "$dateOfPurchase"
+//           },
+//           totalQuantity: { $sum: 1 },
+//           totalAmount: { $sum: { $multiply: ["$individualAmount", 1] } }, // Ensure correct total
+//           stocks: { $push: "$_id" } // Store IDs for later
+//         }
+//       },
+//       { $sort: { "_id.dateOfPurchase": 1 } }
+//     ]);
+
+//     res.status(200).json(groupedStocks);
+//   } catch (err) {
+//     console.error("Error fetching stock data:", err);
+//     res.status(500).json({ error: "Failed to fetch stock data" });
+//   }
+// });
+
+
+// router.post('/search', async (req, res) => {
+//   const { _id, allocatedDept, roomNo, specification, quantity, startDate, endDate } = req.body;
+
+//   try {
+//     const query = {};
+//     if (_id) query._id = _id;
+//     if (allocatedDept) query.allocatedDept = allocatedDept;
+//     if (roomNo) query.roomNo = roomNo;
+//     if (specification) query.specification = specification;
+//     if (quantity) query.quantity = quantity;
+
+//     // Add date range filter
+//     if (startDate && endDate) {
+//       query.dateOfPurchase = {
+//         $gte: new Date(startDate),
+//         $lte: new Date(endDate),
+//       };
+//     }
+
+//     const results = await approvedStock.find(query);
+//     res.status(200).json(results);
+//   } catch (err) {
+//     res.status(500).json({ error: 'Error querying stocks', details: err.message });
+//   }
+// });
+
+// router.post('/search', async (req, res) => {
+//   const { stockType, _id, allocatedDept, roomNo, specification, quantity, startDate, endDate } = req.body;
+
+//   try {
+//     if (!stockType) {
+//       return res.status(400).json({ error: 'Stock type is required' });
+//     }
+
+//     const collection = stockType === 'Institutional Stock' ? instStock : deptStock;
+    
+//     const query = {};
+//     if (_id) query._id = _id;
+//     if (allocatedDept) query.allocatedDept = allocatedDept;
+//     if (roomNo) query.roomNo = roomNo;
+//     if (specification) query.specification = specification;
+//     if (quantity) query.quantity = quantity;
+//     if (startDate && endDate) {
+//       query.dateOfPurchase = { $gte: new Date(startDate), $lte: new Date(endDate) };
+//     }
+
+//     const results = await collection.find(query);
+//     res.status(200).json(results);
+//   } catch (err) {
+//     res.status(500).json({ error: 'Error querying stocks', details: err.message });
+//   }
+// });
+
+// router.post("/search", async (req, res) => {
+//   try {
+//     const { stockType, allocatedDept, roomNo, specification, startDate, endDate } = req.body;
+
+//     let matchConditions = {};
+    
+//     if (stockType) matchConditions.stockType = stockType;
+//     if (allocatedDept) matchConditions.allocatedDept = allocatedDept;
+//     if (roomNo) matchConditions.roomNo = roomNo;
+//     if (specification) matchConditions.specification = specification;
+//     if (startDate && endDate) {
+//       matchConditions.dateOfPurchase = { $gte: new Date(startDate), $lte: new Date(endDate) };
+//     }
+
+//     const groupedStocks = await approvedStock.aggregate([
+//       { $match: matchConditions },
+//       {
+//         $group: {
+//           _id: {
+//             specification: "$specification",
+//             vendorName: "$vendorName",
+//             batchNo: "$batchNo",
+//             dateOfPurchase: "$dateOfPurchase",
+//             allocatedDept: "$allocatedDept"
+//           },
+//           totalQuantity: { $sum: "$quantity" },
+//           totalAmount: { $sum: "$totalAmount" } // Calculate total amount
+//         }
+//       },
+//       { $sort: { "_id.dateOfPurchase": 1 } }
+//     ]);
+
+//     res.status(200).json(groupedStocks);
+//   } catch (err) {
+//     console.error("Error fetching grouped stock:", err);
+//     res.status(500).json({ error: "Failed to fetch stock data" });
+//   }
+// });
+router.post("/search", async (req, res) => {
   try {
-    const query = {};
-    if (_id) query._id = _id;
-    if (allocatedDept) query.allocatedDept = allocatedDept;
-    if (roomNo) query.roomNo = roomNo;
-    if (specification) query.specification = specification;
-    if (quantity) query.quantity = quantity;
+    const { stockType, allocatedDept, specification, startDate, endDate, minAmount, maxAmount } = req.body;
 
-    // Add date range filter
-    if (startDate && endDate) {
-      query.dateOfPurchase = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
-      };
-    }
+    let collection = stockType === "institutional" ? instStock : deptStock;
 
-    const results = await approvedStock.find(query);
-    res.status(200).json(results);
+    let matchConditions = {};
+
+    if (allocatedDept) matchConditions.allocatedDept = allocatedDept;
+    if (specification) matchConditions.specification = specification;
+
+    // Aggregate stocks by batch entry
+    const groupedStocks = await collection.aggregate([
+      // Convert dateOfPurchase from string to Date
+      {
+        $addFields: {
+          convertedDate: { $toDate: "$dateOfPurchase" }
+        }
+      },
+
+      // Apply filters
+      {
+        $match: {
+          ...matchConditions,
+          ...(startDate && endDate && {
+            convertedDate: { 
+              $gte: new Date(startDate), 
+              $lte: new Date(endDate) 
+            }
+          }),
+          ...(minAmount || maxAmount ? {
+            totalAmount: {
+              ...(minAmount && { $gte: parseFloat(minAmount) }),
+              ...(maxAmount && { $lte: parseFloat(maxAmount) })
+            }
+          } : {})
+        }
+      },
+
+      // Group stocks
+      {
+        $group: {
+          _id: {
+            specification: "$specification",
+            vendorName: "$vendorName",
+            batchNo: "$batchNo",
+            allocatedDept: "$allocatedDept",
+            dateOfPurchase: "$dateOfPurchase"
+          },
+          totalQuantity: { $sum: 1 },
+          totalAmount: { $sum: { $multiply: ["$individualAmount", 1] } }, // Sum totalAmount for the batch
+          stocks: { $push: "$_id" } // Store IDs for later
+        }
+      },
+
+      // Sort by dateOfPurchase (converted)
+      { $sort: { "_id.dateOfPurchase": 1 } }
+    ]);
+
+    res.status(200).json(groupedStocks);
   } catch (err) {
-    res.status(500).json({ error: 'Error querying stocks', details: err.message });
+    console.error("Error fetching stock data:", err);
+    res.status(500).json({ error: "Failed to fetch stock data" });
   }
 });
+
+
+
+
 
 module.exports = router;

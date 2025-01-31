@@ -111,6 +111,11 @@ function PurchaseInCharge() {
         
         const { assetHeads, specification, vendorName, totalAmount, batchNo, dateOfPurchase, purpose, financialYear, bills, allocatedDept, stockType, quantity } = stockData;
         
+        if (quantity <= 0 || totalAmount <= 0) {
+          alert("Quantity and Total Amount must be greater than zero.");
+          return;
+        }
+        
         // Handle backend call for adding stock
         await axios.post("http://localhost:5000/api/items/addStock", {
           assetHeads,
@@ -180,12 +185,13 @@ function PurchaseInCharge() {
           <div className="sidebar">
             <button onClick={() => setSelectedOption('Add Stock')}>Add Stock</button>
             <button onClick={() => setSelectedOption('Stocks')}>View Stocks</button>
+            <button onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</button>
           </div>
         </div>
         <div className="content">
           {selectedOption === 'Add Stock' && (
             <div>
-              <h1>Add Stock</h1>
+              <h1>Add Stock</h1>``
               <div>
               <label>
                 Upload Stock Excel:
@@ -286,10 +292,15 @@ function PurchaseInCharge() {
               </form>
             </div>
           )}
-            {/* {selectedOption === 'Stocks' && (
+            {selectedOption === 'Stocks' && (
               <><ViewStocks /></>
         )
-        } */}
+        }
+        {
+          selectedOption === 'Fetch Stocks' && (
+            <StockQuery />
+          )
+        }
         </div>
       </div>
     );
