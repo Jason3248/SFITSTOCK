@@ -7,68 +7,6 @@ const { generateStockId } = require('../../src/utils/stockIdHelper')
 const deptStock = require('../models/deptStock')
 const instStock = require('../models/instStock')
 
-// router.post('/post', async (req, res) => {
-//   const { _id, assetHeads, specification, dateOfPurchase, financialYear, batchNo, vendorName, quantity, totalAmount, roomNo, purpose, bills, allocatedDept } = req.body;
-  
-//   console.log(req.body); 
-  
-//   if (!allocatedDept || !roomNo || !specification || !quantity) {
-//       return res.status(400).json({ error: 'All fields are required' });
-//   }
-
-//   try {
-    
-//     const existingStocks = await stock.find({
-//       allocatedDept,
-//       roomNo,
-//       specification,
-//       dateOfPurchase,
-//       vendorName
-//     }).sort({ _id: 1 });
-
-//     // Determine max quantity
-//     let maxQuantity = 0;
-//     if (existingStocks.length > 0) {
-//       const lastStock = existingStocks[existingStocks.length - 1];
-//       const lastId = lastStock._id;
-//       const parts = lastId.split('/');
-//       maxQuantity = parseInt(parts[5]);  // Adjust index for quantity part of the _id
-//     }
-
-//     let createdStocks = [];
-
-//     for (let i = 1; i <= quantity; i++) {
-//       const newId = `${allocatedDept}/${roomNo}/${specification}/${dateOfPurchase}/${vendorName}/${maxQuantity + i}`;
-//       console.log(newId);  // Log the new _id being created
-      
-//       const newStock = new stock({
-//         allocatedDept,
-//         roomNo,
-//         specification,
-//         quantity: 1,  // Adding one stock at a time
-//         _id: newId,
-//         assetHeads,
-//         dateOfPurchase,
-//         financialYear,
-//         batchNo,
-//         vendorName,
-//         totalAmount,
-//         bills,
-//         purpose
-//       });
-
-//       await newStock.save();  // Save new stock
-//       createdStocks.push(newStock);  // Track created stock
-//     }
-
-//     console.log(createdStocks);  // Log all created stocks after the loop
-    
-//     return res.status(201).json({ message: `${quantity} stock items added successfully` });
-//   } catch (err) {
-//     console.error("Error creating stock items:", err);  // Log the error for debugging
-//     return res.status(500).json({ error: 'Failed to create item', details: err.message });
-//   }
-// });
 
 // router.post('/final', async (req, res) => {
 //   const {
@@ -146,6 +84,278 @@ router.get("/department/:department", async (req, res) => {
   }
 });
 
+// router.post("/uploadStockExcel", async (req, res) => {
+//   try {
+//     const { stocks } = req.body;
+
+//     if (!stocks || !Array.isArray(stocks)) {
+//       return res.status(400).json({ error: "Invalid data format." });
+//     }
+
+//     const newStocks = stocks.map(stock => {
+//       const { assetHeads, specification, vendorName, quantity, batchNo, totalAmount, roomNo, dateOfPurchase, purpose, financialYear, bills, stockType, allocatedDept } = stock;
+      
+//       // Validate required fields
+//       if (!assetHeads || !specification || !vendorName || !quantity || !batchNo || !totalAmount || !dateOfPurchase || !purpose || !financialYear || !stockType) {
+//         throw new Error("Missing required fields in stock data.");
+//       }
+
+//       let parsedAllocatedDept = [];
+//       if (stockType === "Departmental Stock") {
+//         try {
+//           parsedAllocatedDept = JSON.parse(allocatedDept);
+//           if (typeof parsedAllocatedDept !== "object") throw new Error();
+//         } catch (e) {
+//           throw new Error("Invalid allocatedDept format. It should be a JSON object.");
+//         }
+//       }
+
+//       return {
+//         assetHeads,
+//         specification,
+//         vendorName,
+//         quantity: parseInt(quantity),
+//         batchNo,
+//         totalAmount: parseFloat(totalAmount),
+//         roomNo: stockType === "Institutional Stock" ? roomNo : "",
+//         dateOfPurchase,
+//         purpose,
+//         financialYear,
+//         bills,
+//         stockType,
+//         allocatedDept: stockType === "Departmental Stock" ? Object.entries(parsedAllocatedDept).map(([dept, allocatedQuantity]) => ({ department: dept, allocatedQuantity })) : []
+//       };
+//     });
+
+//     // Insert into MongoDB
+//     await approvedStock.insertMany(newStocks);
+
+//     res.status(200).json({ message: "Stocks uploaded successfully." });
+
+//   } catch (error) {
+//     console.error("Error processing Excel upload:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+router.post("/uploadStockExcel", async (req, res) => {
+  try {
+    const { stocks } = req.body;
+
+    if (!stocks || !Array.isArray(stocks)) {
+      return res.status(400).json({ error: "Invalid data format." });
+    }
+
+    let createdStocks = [];
+
+    for (const stock of stocks) {
+      const {
+        assetHeads,
+        specification,
+        vendorName,
+        quantity,
+        batchNo,
+        totalAmount,
+        roomNo,
+        dateOfPurchase,
+        purpose,
+        financialYear,
+        bills,
+        stockType,
+        allocatedDept
+      } = stock;
+
+      // Validate required fields
+      if (!assetHeads || !specification || !vendorName || !quantity || !batchNo || !totalAmount || !dateOfPurchase || !purpose || !financialYear || !stockType) {
+        throw new Error("Missing required fields in stock data.");
+      }
+
+      let parsedAllocatedDept = [];
+      if (stockType === "Departmental Stock") {
+        try {
+          parsedAllocatedDept = JSON.parse(allocatedDept);
+          if (typeof parsedAllocatedDept !== "object") throw new Error();
+        } catch (e) {
+          throw new Error("Invalid allocatedDept format. It should be a JSON object.");
+        }
+      }
+
+      // Save stock to approvedStock collection
+      const newApprovedStock = new approvedStock({
+        assetHeads,
+        specification,
+        vendorName,
+        quantity: parseInt(quantity),
+        batchNo,
+        totalAmount: parseFloat(totalAmount),
+        roomNo: stockType === "Institutional Stock" ? roomNo : "",
+        dateOfPurchase,
+        purpose,
+        financialYear,
+        bills,
+        stockType,
+        allocatedDept: stockType === "Departmental Stock" ? Object.entries(parsedAllocatedDept).map(([dept, allocatedQuantity]) => ({ department: dept, allocatedQuantity })) : []
+      });
+
+      await newApprovedStock.save();
+
+      // If Institutional Stock, create entries in instStock
+      if (stockType === "Institutional Stock") {
+        for (let i = 1; i <= quantity; i++) {
+          const uniqueId = `INST/${specification}/${dateOfPurchase}/${vendorName}/${batchNo}/${i}`;
+
+          const newInstitutionalStock = new instStock({
+            _id: uniqueId,
+            assetHeads,
+            specification,
+            vendorName,
+            quantity: 1,
+            dateOfPurchase,
+            financialYear,
+            batchNo,
+            totalAmount,
+            bills,
+            purpose,
+            stockType: "Institutional Stock",
+            roomNo,
+            status: "Approved"
+          });
+
+          await newInstitutionalStock.save();
+          createdStocks.push(newInstitutionalStock);
+        }
+      }
+
+      // If Departmental Stock, create entries in deptStock
+      if (stockType === "Departmental Stock") {
+        for (let dept of Object.entries(parsedAllocatedDept)) {
+          const [department, allocatedQuantity] = dept;
+
+          for (let i = 1; i <= allocatedQuantity; i++) {
+            const uniqueId = `${department}/${specification}/${dateOfPurchase}/${vendorName}/${batchNo}/${i}`;
+
+            const newDepartmentalStock = new deptStock({
+              _id: uniqueId,
+              assetHeads,
+              specification,
+              vendorName,
+              quantity: 1,
+              dateOfPurchase,
+              financialYear,
+              batchNo,
+              totalAmount,
+              bills,
+              purpose,
+              allocatedDept: department,
+              roomNo: "",
+              status: "Pending"
+            });
+
+            await newDepartmentalStock.save();
+            createdStocks.push(newDepartmentalStock);
+          }
+        }
+      }
+    }
+
+    res.status(200).json({
+      message: "Stocks uploaded successfully.",
+      createdStocks
+    });
+
+  } catch (error) {
+    console.error("Error processing Excel upload:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+
+router.get("/departmentGrouped/:department", async (req, res) => {
+  try {
+    const { department } = req.params;
+
+    // Aggregate stocks by batch entry (keeping them separate per addition)
+    const groupedStocks = await deptStock.aggregate([
+      {
+        $match: { allocatedDept: department, roomNo: "" } // Only unallocated stocks
+      },
+      {
+        $group: {
+          _id: { 
+            assetHeads: "$assetHeads",
+            specification: "$specification",
+            vendorName: "$vendorName",
+            batchNo: "$batchNo",
+            dateOfPurchase: "$dateOfPurchase"
+          },
+          totalQuantity: { $sum: 1 },
+          stocks: { $push: "$_id" } // Store IDs for later allocation
+        }
+      },
+      { $sort: { "_id.dateOfPurchase": 1 } }
+    ]);
+
+    return res.status(200).json(groupedStocks);
+  } catch (err) {
+    console.error("Error fetching grouped stocks:", err);
+    return res.status(500).json({ error: "Failed to fetch grouped stocks" });
+  }
+});
+
+router.put("/assignRooms", async (req, res) => {
+  try {
+    const { batchDetails, roomAssignments } = req.body;
+    
+    if (!batchDetails || !roomAssignments || roomAssignments.length === 0) {
+      return res.status(400).json({ error: "Batch details and room assignments are required" });
+    }
+
+    const { specification, vendorName, batchNo, dateOfPurchase, department } = batchDetails;
+
+    // Fetch stocks matching the given batch details
+    const unassignedStocks = await deptStock.find({
+      allocatedDept: department,
+      specification,
+      vendorName,
+      batchNo,
+      dateOfPurchase,
+      roomNo: "" // Only unassigned stocks
+    });
+
+    if (unassignedStocks.length === 0) {
+      return res.status(400).json({ error: "No available stocks to assign for this batch" });
+    }
+
+    let updatedStocks = [];
+
+    // Assign rooms based on the given allocation
+    for (const { roomNo, quantity } of roomAssignments) {
+      if (quantity > unassignedStocks.length) {
+        return res.status(400).json({ error: `Not enough stocks available for room ${roomNo}` });
+      }
+
+      const stocksToAssign = unassignedStocks.splice(0, quantity);
+
+      const updatePromises = stocksToAssign.map(stock =>
+        deptStock.findByIdAndUpdate(stock._id, { roomNo, status: "Assigned" }, { new: true })
+      );
+
+      const updatedBatch = await Promise.all(updatePromises);
+      updatedStocks.push(...updatedBatch);
+    }
+
+    return res.status(200).json({
+      message: "Stocks assigned successfully",
+      updatedStocks
+    });
+
+  } catch (err) {
+    console.error("Error updating stock:", err);
+    return res.status(500).json({ error: "Failed to update stock" });
+  }
+});
+
+
+
 // Update roomNo for departmental stock
 // router.put("/assignRoom", async (req, res) => {
 //   try {
@@ -168,41 +378,41 @@ router.get("/department/:department", async (req, res) => {
 //   }
 // });
 
-router.put("/assignRooms", async (req, res) => {
-  try {
-    const { department, roomNo, quantity } = req.body;
+// router.put("/assignRooms", async (req, res) => {
+//   try {
+//     const { department, roomNo, quantity } = req.body;
 
-    if (!department || !roomNo || !quantity) {
-      return res.status(400).json({ error: "Department, roomNo, and quantity are required" });
-    }
+//     if (!department || !roomNo || !quantity) {
+//       return res.status(400).json({ error: "Department, roomNo, and quantity are required" });
+//     }
 
-    // Fetch unassigned stocks for the department
-    const unassignedStocks = await deptStock.find({
-      allocatedDept: department,
-      roomNo: ""  // Only select unassigned stocks
-    }).limit(quantity);
+//     // Fetch unassigned stocks for the department
+//     const unassignedStocks = await deptStock.find({
+//       allocatedDept: department,
+//       roomNo: ""  // Only select unassigned stocks
+//     }).limit(quantity);
 
-    if (unassignedStocks.length === 0) {
-      return res.status(400).json({ error: "No available stocks to assign" });
-    }
+//     if (unassignedStocks.length === 0) {
+//       return res.status(400).json({ error: "No available stocks to assign" });
+//     }
 
-    // Update the selected stocks with the roomNo
-    const updatePromises = unassignedStocks.map(stock => 
-      deptStock.findByIdAndUpdate(stock._id, { roomNo, status: "Assigned" }, { new: true })
-    );
+//     // Update the selected stocks with the roomNo
+//     const updatePromises = unassignedStocks.map(stock => 
+//       deptStock.findByIdAndUpdate(stock._id, { roomNo, status: "Assigned" }, { new: true })
+//     );
 
-    const updatedStocks = await Promise.all(updatePromises);
+//     const updatedStocks = await Promise.all(updatePromises);
 
-    return res.status(200).json({
-      message: `${updatedStocks.length} stocks assigned to Room No ${roomNo}`,
-      updatedStocks
-    });
+//     return res.status(200).json({
+//       message: `${updatedStocks.length} stocks assigned to Room No ${roomNo}`,
+//       updatedStocks
+//     });
 
-  } catch (err) {
-    console.error("Error updating stock:", err);
-    return res.status(500).json({ error: "Failed to update stock" });
-  }
-});
+//   } catch (err) {
+//     console.error("Error updating stock:", err);
+//     return res.status(500).json({ error: "Failed to update stock" });
+//   }
+// });
 
 // Add stock and allocate departmental stocks
 // router.post("/addStock", async (req, res) => {

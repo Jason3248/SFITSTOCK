@@ -6,6 +6,7 @@ import StockQuery from "./StockQuery";
 import "../styles/PurchaseInCharge.css"
 import Profile from './Profile';
 import ViewStocks from "./ViewStocks";
+import * as XLSX from 'xlsx';
 
 function PurchaseInCharge() {
     const [approvedStocks, setApprovedStocks] = useState([]);
@@ -148,6 +149,30 @@ function PurchaseInCharge() {
         console.error("Error adding/updating item", error);
       }
     };
+
+    const handleExcelUpload = async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+    
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const parsedData = XLSX.utils.sheet_to_json(sheet);
+    
+        try {
+          // Send the parsed data to the backend
+          const response = await axios.post("http://localhost:5000/api/items/uploadStockExcel", { stocks: parsedData });
+          alert(response.data.message);
+          fetchApprovedStocks(); // Refresh stock list
+        } catch (error) {
+          console.error("Error uploading stock data:", error);
+          alert("Failed to upload stock data.");
+        }
+      };
+    };
   
     return (
       <div className="purchase-in-charge-container">
@@ -161,6 +186,13 @@ function PurchaseInCharge() {
           {selectedOption === 'Add Stock' && (
             <div>
               <h1>Add Stock</h1>
+              <div>
+              <label>
+                Upload Stock Excel:
+                <input type="file" accept=".xlsx, .xls" onChange={handleExcelUpload} />
+              </label>
+
+              </div>
               <form onSubmit={handleSubmit} className="stock-form">
                 <label>
                   Asset Head:
