@@ -21,7 +21,7 @@
 
 //   const fetchDepartments = async () => {
 //     try {
-//       const response = await fetch('http://localhost:3000/api/admin/config'); // Adjust URL for fetching department list
+//       const response = await fetch('http://localhost:5000/api/admin/config'); // Adjust URL for fetching department list
 //       const data = await response.json();
 //       setDepartments(data.allocatedDept); // Assuming the departments come in a `departments` array
 //     } catch (error) {
@@ -52,7 +52,7 @@
 
 //   const departmentInChargeLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:3000/api/auth/login', {
+//       const response = await fetch('http://localhost:5000/api/auth/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@
 
 //   const userLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:3000/api/auth/login', {
+//       const response = await fetch('http://localhost:5000/api/auth/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@
 
 //   const hodLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:3000/api/auth/login', {
+//       const response = await fetch('http://localhost:5000/api/auth/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@
 
 //   const adminLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:3000/api/admin/login', {
+//       const response = await fetch('http://localhost:5000/api/admin/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -321,7 +321,7 @@ const Login = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/admin/config'); // Adjust URL for fetching department list
+      const response = await fetch('http://localhost:5000/api/admin/config'); // Adjust URL for fetching department list
       const data = await response.json();
       setDepartments(data.allocatedDept);
     } catch (error) {
@@ -351,7 +351,7 @@ const Login = () => {
   };
   const userLogin = async (credentials) => {
         try {
-          const response = await fetch('http://localhost:3000/api/auth/login', {
+          const response = await fetch('http://localhost:5000/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -398,40 +398,40 @@ const Login = () => {
         }
       };
 
-  const departmentInChargeLogin = async (credentials) => {
-    try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Department In-Charge login failed!');
-      }
-  
-      const data = await response.json();
-      if (data.token && data.userLevel === 5 && selectedDepartment) {
-        localStorage.setItem('token', data.token);
-        alert('Department In-Charge login successful!');
-        
-        // Navigate to Department In-Charge page and pass department info
-        navigate(`/department-in-charge`, { state: { department: selectedDepartment } });
-      } else {
-        throw new Error('Login failed! No token or invalid user level received.');
-      }
-    } catch (error) {
-      console.error('Error during Department In-Charge login:', error.message);
-      alert(error.message || 'An error occurred. Please try again.');
-    }
-  };
+      const departmentInChargeLogin = async (credentials) => {
+        try {
+          const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+          });
+      
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Department In-Charge login failed!');
+          }
+      
+          const data = await response.json();
+          if (data.token && data.userLevel === 5 && selectedDepartment) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('userLevel', data.userLevel);
+            alert('Department In-Charge login successful!');
+            navigate('/department-in-charge', { state: selectedDepartment });
+          } else {
+            throw new Error('Login failed! Missing token, user level, or department.');
+          }
+        } catch (error) {
+          console.error('Error during Department In-Charge login:', error.message);
+          alert(error.message || 'An error occurred. Please try again.');
+        }
+      };
+      
 
   const hodLogin = async (credentials) => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -447,9 +447,8 @@ const Login = () => {
       const data = await response.json();
       if (data.token && data.userLevel === 2 && selectedDepartment) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('userLevel', data.userLevel)
         alert('HOD login successful!');
-        
-        // Navigate to HOD page and pass selectedDepartment
         navigate(`/hodpage`, { state: { department: selectedDepartment } });
       } else {
         throw new Error('Login failed! No token or invalid user level received.');
@@ -462,7 +461,7 @@ const Login = () => {
 
   const adminLogin = async (credentials) => {
     try {
-      const response = await fetch('http://localhost:3000/api/admin/login', {
+      const response = await fetch('http://localhost:5000/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

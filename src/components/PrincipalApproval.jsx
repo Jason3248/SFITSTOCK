@@ -4,7 +4,7 @@ import { AppBar, Toolbar, Typography, Button, Container, Table, TableBody, Table
 import StockQuery from "./StockQuery";
 import SPITLogoGif from "../components/assets/sfit_logo.gif";  // Assuming the logo is stored as 'sfit_logo.gif' in the 'assets' folder
 import '../styles/principalapproval.css';
-
+import ViewStocks from "./ViewStocks";
 function PrincipalApproval() {
   const [stocks, setStocks] = useState([]);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -15,7 +15,7 @@ function PrincipalApproval() {
   // Fetch pending stocks for approval
   const fetchPendingStocks = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/items/principal-pending");
+      const res = await axios.get("http://localhost:5000/api/items/principal-pending");
       setStocks(res.data);
     } catch (err) {
       console.error("Error fetching stocks for Principal approval", err);
@@ -26,41 +26,47 @@ function PrincipalApproval() {
     fetchPendingStocks();
   }, []);
 
-  const handleApproval = async (id, status) => {
-    let reason = rejectionReason;
-    if (status === 'rejected') {
-      setSelectedStockId(id);
-      setOpenDialog(true);  // Open dialog to enter rejection reason
-    } else {
-      try {
-        await axios.put(`http://localhost:3000/api/items/principal/${encodeURIComponent(id)}`, {
-          principalApprovalStatus: status,
-          rejectionReason: reason
-        });
-        fetchPendingStocks();
-      } catch (err) {
-        console.error("Error updating Principal approval status", err);
-      }
-    }
-  };
+  // const handleApproval = async (id, status) => {
+  //   let reason = rejectionReason;
+  //   if (status === 'rejected') {
+  //     setSelectedStockId(id);
+  //     setOpenDialog(true);  // Open dialog to enter rejection reason
+  //   } else {
+  //     try {
+  //       await axios.put(`http://localhost:5000/api/items/principal/${encodeURIComponent(id)}`, {
+  //         principalApprovalStatus: status,
+  //         rejectionReason: reason
+  //       });
+  //       fetchPendingStocks();
+  //     } catch (err) {
+  //       console.error("Error updating Principal approval status", err);
+  //     }
+  //   }
+  // };
 
   const handleDialogClose = () => {
     setOpenDialog(false);
     setSelectedStockId(null);
   };
 
-  const handleRejectWithReason = async () => {
-    try {
-      await axios.put(`http://localhost:3000/api/items/principal/${encodeURIComponent(selectedStockId)}`, {
-        principalApprovalStatus: "rejected",
-        rejectionReason: rejectionReason
-      });
-      setRejectionReason('');
-      fetchPendingStocks();
-      handleDialogClose();
-    } catch (err) {
-      console.error("Error rejecting with reason", err);
-    }
+  // const handleRejectWithReason = async () => {
+  //   try {
+  //     await axios.put(`http://localhost:5000/api/items/principal/${encodeURIComponent(selectedStockId)}`, {
+  //       principalApprovalStatus: "rejected",
+  //       rejectionReason: rejectionReason
+  //     });
+  //     setRejectionReason('');
+  //     fetchPendingStocks();
+  //     handleDialogClose();
+  //   } catch (err) {
+  //     console.error("Error rejecting with reason", err);
+  //   }
+  // };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userLevel');
+    window.location.href = '/login';
   };
 
   return (
@@ -76,8 +82,9 @@ function PrincipalApproval() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Principal Approval Dashboard
           </Typography>
-          <Button color="inherit" onClick={() => setSelectedOption('Main Page')}>View Stocks</Button>
+          <Button color="inherit" onClick={() => setSelectedOption('View Stocks')}>View Stocks</Button>
           <Button color="inherit" onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</Button>
+          <Button color="inherit" onClick={() => logout()}>Logout</Button>
         </Toolbar>
       </AppBar>
 
@@ -87,81 +94,13 @@ function PrincipalApproval() {
         {selectedOption === 'Fetch Stocks' && <StockQuery />}
 
         {/* Display stock approval list when "Main Page" is selected */}
-        {selectedOption === 'Main Page' && (
-          <>
-            <Typography variant="h4" gutterBottom>Principal Stock Approvals</Typography>
-            <Typography variant="h6" color="textSecondary">Pending Approvals</Typography>
-
-            {stocks.length === 0 ? (
-              <Typography variant="body1" color="textSecondary">No stocks pending approval.</Typography>
-            ) : (
-              <TableContainer component={Paper} sx={{ marginTop: 3, borderRadius: 2 }}>
-                <Table aria-label="stock approval table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Asset Head</TableCell>
-                      <TableCell>Specifications</TableCell>
-                      <TableCell>Vendor Name</TableCell>
-                      <TableCell>Quantity</TableCell>
-                      <TableCell>Batch No</TableCell>
-                      <TableCell>Date of Purchase</TableCell>
-                      <TableCell>Total Amount</TableCell>
-                      <TableCell>Room No</TableCell>
-                      <TableCell>Departments</TableCell>
-                      <TableCell>HOD Approval Status</TableCell>
-                      <TableCell>Principal Approval Status</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {stocks.map((stock) => (
-                      <TableRow key={stock._id}>
-                        <TableCell>{stock.assetHeads}</TableCell>
-                        <TableCell>{stock.specification}</TableCell>
-                        <TableCell>{stock.vendorName}</TableCell>
-                        <TableCell>{stock.quantity}</TableCell>
-                        <TableCell>{stock.batchNo}</TableCell>
-                        <TableCell>{new Date(stock.dateOfPurchase).toLocaleDateString()}</TableCell>
-                        <TableCell>{stock.totalAmount}</TableCell>
-                        <TableCell>{stock.roomNo}</TableCell>
-                        <TableCell>{stock.allocatedDept}</TableCell>
-                        <TableCell>{stock.hodApprovalStatus}</TableCell>
-                        <TableCell>{stock.principalApprovalStatus}</TableCell>
-                        <TableCell>
-                          {stock.principalApprovalStatus === "pending" ? (
-                            <>
-                              <Button
-                                variant="contained"
-                                color="success"
-                                onClick={() => handleApproval(stock._id, "approved")}
-                                sx={{ marginRight: 1 }}
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                variant="contained"
-                                color="error"
-                                onClick={() => handleApproval(stock._id, "rejected")}
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          ) : (
-                            <Typography variant="body2">{stock.principalApprovalStatus.toUpperCase()}</Typography>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </>
+        {selectedOption === 'View Stocks' && (
+          <ViewStocks />
         )}
       </Container>
 
       {/* Rejection Reason Dialog */}
-      <Dialog open={openDialog} onClose={handleDialogClose}>
+      {/* <Dialog open={openDialog} onClose={handleDialogClose}>
         <DialogTitle>Rejection Reason</DialogTitle>
         <DialogContent>
           <Typography variant="body1" color="textSecondary" gutterBottom>
@@ -182,7 +121,7 @@ function PrincipalApproval() {
             Submit
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }

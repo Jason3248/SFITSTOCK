@@ -37,7 +37,7 @@ function PurchaseInCharge() {
 
   const fetchConfig = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/admin/config");
+      const res = await axios.get("http://localhost:5000/api/admin/config");
       setAssetHeads(res.data.assetHeads || []);
       setAllocatedDepartments(res.data.allocatedDept || []);
     } catch (err) {
@@ -53,7 +53,7 @@ function PurchaseInCharge() {
 
   const fetchApprovedStocks = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/items/groupApprovedStocks");
+      const res = await axios.get("http://localhost:5000/api/items/groupApprovedStocks");
       setApprovedStocks(res.data);
     } catch (err) {
       console.error("Error fetching approved items", err);
@@ -120,7 +120,7 @@ function PurchaseInCharge() {
       const { assetHeads, specification, vendorName, totalAmount, batchNo, dateOfPurchase, purpose, financialYear, bills, allocatedDept, stockType, quantity } = stockData;
 
       // Handle backend call for adding stock
-      await axios.post("http://localhost:3000/api/items/addStock", {
+      await axios.post("http://localhost:5000/api/items/addStock", {
         assetHeads,
         specification,
         vendorName,
@@ -172,7 +172,7 @@ function PurchaseInCharge() {
 
       try {
         // Send the parsed data to the backend
-        const response = await axios.post("http://localhost:3000/api/items/uploadStockExcel", { stocks: parsedData });
+        const response = await axios.post("http://localhost:5000/api/items/uploadStockExcel", { stocks: parsedData });
         alert(response.data.message);
         fetchApprovedStocks(); // Refresh stock list
       } catch (error) {
@@ -428,9 +428,9 @@ function PurchaseInCharge() {
           </div>
         )}
 
-        {selectedOption === 'Stocks' && (
-          <ViewStocks />
-        )}
+        {selectedOption === 'Stocks' && <ViewStocks />}
+        {selectedOption === 'Fetch Stocks' && <StockQuery />}
+        {selectedOption === 'Update Profile' && <Profile />}
       </Box>
     </Box>
   );

@@ -1473,7 +1473,7 @@ router.post("/search", async (req, res) => {
         }
       },
 
-      // Group stocks
+    
       {
         $group: {
           _id: {

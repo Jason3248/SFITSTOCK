@@ -27,7 +27,7 @@ function HODPage() {
 
   const fetchStocks = async () => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/items/getstocks/${department}`);
+      const res = await axios.get(`http://localhost:5000/api/items/getstocks/${department}`);
       setStocks(res.data);
       setFilteredStocks(res.data); // Initialize filteredStocks with all data
     } catch (err) {

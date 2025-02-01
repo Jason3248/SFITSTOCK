@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Container,
@@ -23,7 +24,11 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import CancelIcon from "@mui/icons-material/Cancel";
 
-function DepartmentInCharge({ department }) {
+function DepartmentInCharge() {
+
+  const location = useLocation();
+
+  const department = location.state || {};
   const [groupedStocks, setGroupedStocks] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [roomAssignments, setRoomAssignments] = useState([]);
@@ -33,7 +38,7 @@ function DepartmentInCharge({ department }) {
   const fetchGroupedStocks = async () => {
     if (!department) return;
     try {
-      const res = await axios.get(`http://localhost:3000/api/items/departmentGrouped/${department}`);
+      const res = await axios.get(`http://localhost:5000/api/items/departmentGrouped/${department}`);
       setGroupedStocks(res.data);
     } catch (err) {
       console.error("Error fetching stocks", err);
@@ -63,30 +68,49 @@ function DepartmentInCharge({ department }) {
     setRoomAssignments([...roomAssignments, { roomNo: "", quantity: "" }]);
   };
 
-  // Assign rooms to batch
+  
+ 
   const assignRooms = async () => {
+    console.log("Selected batch before sending:", selectedBatch); 
+
     if (!selectedBatch || roomAssignments.length === 0) {
       alert("Please select a batch and enter at least one room assignment.");
       return;
     }
-
+  
+    const payload = {
+      batchDetails: {
+        specification: selectedBatch._id.specification,
+        vendorName: selectedBatch._id.vendorName,
+        batchNo: selectedBatch._id.batchNo,
+        dateOfPurchase: selectedBatch._id.dateOfPurchase,
+        department 
+      },
+      roomAssignments: roomAssignments.map((r) => ({
+        roomNo: r.roomNo.trim(),
+        quantity: parseInt(r.quantity, 10),
+      })),
+    };
+  
+    console.log("Sending payload:", payload); // Debug log
+  
     try {
-      const res = await axios.put("http://localhost:3000/api/items/assignRooms", {
-        batchDetails: selectedBatch._id,
-        roomAssignments: roomAssignments.map((r) => ({
-          roomNo: r.roomNo,
-          quantity: parseInt(r.quantity, 10),
-        })),
-      });
-
+      const res = await axios.put("http://localhost:5000/api/items/assignRooms", payload);
       alert(res.data.message);
       fetchGroupedStocks();
       setOpenDialog(false);
       setSelectedBatch(null);
     } catch (err) {
-      console.error("Error updating room", err);
-      alert("Failed to assign rooms.");
+      console.error("Backend error:", err.response?.data);
+      alert(err.response?.data?.error || "Failed to assign rooms.");
     }
+  };
+  
+  
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userLevel');
+    window.location.href = '/login';
   };
 
   return (
@@ -96,6 +120,9 @@ function DepartmentInCharge({ department }) {
           {department} Department In-Charge
         </Typography>
       </Box>
+      <div>
+        <button onClick={() => logout()}>LOG OUT</button>
+      </div>
 
       {/* Table to Display Grouped Stock */}
       <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2 }}>
@@ -247,3 +274,29 @@ function DepartmentInCharge({ department }) {
 }
 
 export default DepartmentInCharge;
+
+// Assign rooms to batch
+  // const assignRooms = async () => {
+  //   if (!selectedBatch || roomAssignments.length === 0) {
+  //     alert("Please select a batch and enter at least one room assignment.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await axios.put("http://localhost:5000/api/items/assignRooms", {
+  //       batchDetails: selectedBatch._id,
+  //       roomAssignments: roomAssignments.map((r) => ({
+  //         roomNo: r.roomNo,
+  //         quantity: parseInt(r.quantity, 10),
+  //       })),
+  //     });
+
+  //     alert(res.data.message);
+  //     fetchGroupedStocks();
+  //     setOpenDialog(false);
+  //     setSelectedBatch(null);
+  //   } catch (err) {
+  //     console.error("Error updating room", err);
+  //     alert("Failed to assign rooms.");
+  //   }
+  // };

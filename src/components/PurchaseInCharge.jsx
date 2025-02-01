@@ -47,7 +47,7 @@ function PurchaseInCharge() {
   // Fetch config (assetHeads and allocatedDept) from backend
   const fetchConfig = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/admin/config");
+      const res = await axios.get("http://localhost:5000/api/admin/config");
       setAssetHeads(res.data.assetHeads || []);
       setAllocatedDepartments(res.data.allocatedDept || []);
     } catch (err) {
@@ -57,7 +57,7 @@ function PurchaseInCharge() {
 
   const fetchApprovedStocks = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/items/groupApprovedStocks");
+      const res = await axios.get("http://localhost:5000/api/items/groupApprovedStocks");
       setApprovedStocks(res.data);
     } catch (err) {
       console.error("Error fetching approved items", err);
@@ -106,14 +106,14 @@ function PurchaseInCharge() {
       if (editId) {
         const encodedId = encodeURIComponent(editId);
         await axios.put(
-          `http://localhost:3000/api/items/put/${encodedId}`,
+          `http://localhost:5000/api/items/put/${encodedId}`,
           {
             ...stockData,
             bills: uploadedBillUrl || stockData.bills, // Set the bill file URL or keep the existing one
           }
         );
       } else {
-        await axios.post("http://localhost:3000/api/items/final", {
+        await axios.post("http://localhost:5000/api/items/final", {
           ...stockData,
           bills: uploadedBillUrl, // Set the bill file URL
         });
@@ -170,7 +170,7 @@ function PurchaseInCharge() {
   const handleDelete = async (id) => {
     try {
       const encodedId = encodeURIComponent(id);
-      await axios.delete(`http://localhost:3000/api/items/delete/${encodedId}`);
+      await axios.delete(`http://localhost:5000/api/items/delete/${encodedId}`);
       // fetchStocks();
     } catch (err) {
       console.error("Error deleting item", err);

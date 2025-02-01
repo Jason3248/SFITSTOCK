@@ -114,7 +114,7 @@ function ViewStocks() {
   const fetchApprovedStocks = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:3000/api/items/groupApprovedStocks"
+        "http://localhost:5000/api/items/groupApprovedStocks"
       );
       setApprovedStocks(data); // Assuming 'data' includes individual stocks for each month
     } catch (err) {

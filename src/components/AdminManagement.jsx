@@ -17,7 +17,7 @@ const AdminManagement = () => {
 
   const fetchValues = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/admin/config");
+      const response = await axios.get("http://localhost:5000/api/admin/config");
       setAssetHeads(response.data.assetHeads || []);
       setAllocatedDepartments(response.data.allocatedDept || []);
     } catch (error) {
@@ -61,7 +61,7 @@ const AdminManagement = () => {
 
   const updateConfig = async (updatedAssetHeads, updatedAllocatedDepts) => {
     try {
-      await axios.put("http://localhost:3000/api/admin/update-config", {
+      await axios.put("http://localhost:5000/api/admin/update-config", {
         assetHeads: updatedAssetHeads,
         allocatedDept: updatedAllocatedDepts,
       });
@@ -74,7 +74,7 @@ const AdminManagement = () => {
   const handleCreateHod = async () => {
     if (hodName && hodEmail && hodPassword && hodDepartment) {
       try {
-        const response = await axios.post("http://localhost:3000/api/admin/createuser", {
+        const response = await axios.post("http://localhost:5000/api/admin/createuser", {
           name: hodName,
           email: hodEmail,
           password: hodPassword,
