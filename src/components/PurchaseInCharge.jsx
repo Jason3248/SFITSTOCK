@@ -5,9 +5,11 @@ import { storage } from "../firebaseConfig"; // Import Firebase storage
 import StockQuery from "./StockQuery";
 import "../styles/PurchaseInCharge.css"
 import Profile from './Profile';
+import sfit_logo from "./assets/sfit_logo.gif";
+
 
 function PurchaseInCharge() {
-  // const [stocks, setStocks] = useState([]);
+  const [stocks, setStocks] = useState([]);
   const [approvedStocks, setApprovedStocks] = useState([]);
   const [assetHeads, setAssetHeads] = useState([]);
   const [allocatedDepartments, setAllocatedDepartments] = useState([]);
@@ -27,14 +29,25 @@ function PurchaseInCharge() {
     financialYear: "",
     bills: "",
     allocatedDept: ""
+
   });
+  const logout = () => {
+    // Remove the JWT token from localStorage
+    localStorage.removeItem('token');
+
+    // Optionally, clear other stored user data
+    localStorage.removeItem('userLevel');
+
+    // Redirect to the login page
+    window.location.href = '/login';
+};
 
   const [editId, setEditId] = useState(null);
 
   // Fetch config (assetHeads and allocatedDept) from backend
   const fetchConfig = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/config");
+      const res = await axios.get("http://localhost:3000/api/admin/config");
       setAssetHeads(res.data.assetHeads || []);
       setAllocatedDepartments(res.data.allocatedDept || []);
     } catch (err) {
@@ -44,7 +57,7 @@ function PurchaseInCharge() {
 
   const fetchApprovedStocks = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/items/groupApprovedStocks");
+      const res = await axios.get("http://localhost:3000/api/items/groupApprovedStocks");
       setApprovedStocks(res.data);
     } catch (err) {
       console.error("Error fetching approved items", err);
@@ -87,20 +100,20 @@ function PurchaseInCharge() {
       if (file) {
         uploadedBillUrl = await uploadFile();
         console.log("UploadedBillURL", uploadedBillUrl);
-    
+         // Get the uploaded file URL
       }
       // Ensure the correct bills URL is used
       if (editId) {
         const encodedId = encodeURIComponent(editId);
         await axios.put(
-          `http://localhost:5000/api/items/put/${encodedId}`,
+          `http://localhost:3000/api/items/put/${encodedId}`,
           {
             ...stockData,
             bills: uploadedBillUrl || stockData.bills, // Set the bill file URL or keep the existing one
           }
         );
       } else {
-        await axios.post("http://localhost:5000/api/items/final", {
+        await axios.post("http://localhost:3000/api/items/final", {
           ...stockData,
           bills: uploadedBillUrl, // Set the bill file URL
         });
@@ -122,6 +135,9 @@ function PurchaseInCharge() {
         financialYear: "",
         bills: "",
         allocatedDept: ""
+        // hodApprovalStatus: "pending",
+        // principalApprovalStatus: "pending",
+        // directorApprovalStatus: "pending"
       });
       setSelectedOption('Stocks');
     } catch (error) {
@@ -144,7 +160,9 @@ function PurchaseInCharge() {
       financialYear: stock.financialYear,
       bills: stock.bills,
       allocatedDept: stock.allocatedDept,
-     
+      hodApprovalStatus: stock.hodApprovalStatus,
+      principalApprovalStatus: stock.principalApprovalStatus,
+      directorApprovalStatus: stock.directorApprovalStatus
     });
     setEditId(stock._id);
     setSelectedOption('Add Stock'); // Redirect to Add Stock to edit
@@ -152,13 +170,12 @@ function PurchaseInCharge() {
   const handleDelete = async (id) => {
     try {
       const encodedId = encodeURIComponent(id);
-      await axios.delete(`http://localhost:5000/api/items/delete/${encodedId}`);
+      await axios.delete(`http://localhost:3000/api/items/delete/${encodedId}`);
       // fetchStocks();
     } catch (err) {
       console.error("Error deleting item", err);
     }
   };
-
 
   const toggleApprovedDrillDown = (index) => {
     setApprovedStocks((prevStocks) =>
@@ -169,14 +186,28 @@ function PurchaseInCharge() {
   }
   return (
     <div className="purchase-in-charge-container">
-      <div className="sidebarParent">
-        <div className="sidebar">
-          <button onClick={() => setSelectedOption('Add Stock')}>Add Stock</button>
-          <button onClick={() => setSelectedOption('Stocks')}>View Stocks</button> 
-          <button onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</button>
-          <button onClick={() => setSelectedOption('Update Profile')}>Update Profile</button>
-        </div>
+       <nav className="navbar">
+      <div className="navbar-logo">
+        <img src={sfit_logo} alt="SFIT Logo" className="logo-img" />
+        <span>SFIT <strong>STOCK</strong></span>
       </div>
+
+      <div className="navbar-links">
+        <button className="navbar-btn" onClick={() => setSelectedOption('Add Stock')}>
+          Add Stock
+        </button>
+        
+        <button className="navbar-btn" onClick={() => setSelectedOption('Fetch Stocks')}>
+          Fetch Stocks
+        </button>
+        <button className="navbar-btn" onClick={() => setSelectedOption('Update Profile')}>
+          Update Profile
+        </button>
+        <button className="navbar-btn" onClick={() => logout()}>
+          Logout
+        </button>
+      </div>
+    </nav>
       <div className="content">
         {selectedOption === 'Add Stock' && (
           <div>
@@ -304,7 +335,7 @@ function PurchaseInCharge() {
             </form>
           </div>
         )}
-        
+
         {selectedOption === 'Stocks' && (
           <div>
             <h1>Approved Stock List</h1>
@@ -312,15 +343,8 @@ function PurchaseInCharge() {
               <thead>
                 <tr>
                   <th>Asset Head</th>
-                  <th>Type/Specification</th>
-                  <th>Date of Purchase</th>
-                  <th>Financial Year</th>
-                  <th>Batch No</th>
                   <th>Quantity</th>
-                  <th>Department</th>
                   <th>Amount</th>
-                  <th>Room No.</th>
-                  <th>Vendor Name</th>
                 </tr>
               </thead>
               <tbody>
@@ -328,15 +352,8 @@ function PurchaseInCharge() {
                   <React.Fragment key={index}>
                     <tr>
                       <td>{group._id.assetHeads}</td>
-                      <td>{group._id.specification}</td>
-                      <td>{group._id.dateOfPurchase}</td>
-                      <td>{group._id.financialYear}</td>
-                      <td>{group._id.batchNo}</td>
                       <td>{group.totalQuantity}</td>
-                      <td>{group._id.allocatedDept}</td>
-                      <td>{group._id.totalAmount}</td>
-                      <td>{group._id.roomNo}</td>
-                      <td>{group._id.vendorName}</td>        
+                      <td>{group._id.totalAmount}</td>      
                       <td>
                         <button onClick={() => toggleApprovedDrillDown(index)}>
                           {group.drillDown ? "View Less" : "View All Stocks"}
@@ -395,7 +412,6 @@ function PurchaseInCharge() {
             
           </div>
         )}
-         
         {
           selectedOption === 'Fetch Stocks' && (
             <><StockQuery /></>

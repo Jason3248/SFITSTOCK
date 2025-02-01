@@ -1,91 +1,195 @@
-/* App Styles */
+/* Base App Styles */
 .App {
-    font-family: Arial, sans-serif;
-  }
-  
-  .profile {
-    display: flex;
-    align-items: center;
-  }
-  
-  .profile .avatar {
-    width: 40px;
-    height: 40px;
-    background-color: black;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  
-  /* Navbar Styles */
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f6f9; /* Light background for readability */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar Styles */
+.navbarParent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+  background-color: #2c3e50; /* Darker background for the navbar */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+}
+
+.nav-item {
+  color: white;
+  cursor: pointer;
+  padding: 12px 24px;
+  font-size: 16px;
+  transition: background-color 0.3s ease-in-out;
+  border-radius: 5px;
+  margin: 0 10px;
+}
+
+.nav-item:hover {
+  background-color: #e74c3c; /* Highlight color */
+}
+
+/* Content Area */
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 40px 20px;
+  flex-grow: 1;
+  background-color: #ffffff; /* White background for the content area */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Soft shadow for the content area */
+  margin: 20px;
+  border-radius: 10px;
+}
+
+h2 {
+  color: #2c3e50;
+  font-size: 22px;
+  margin-bottom: 30px;
+}
+
+.no-stocks-message {
+  font-size: 18px;
+  color: #95a5a6;
+}
+
+.loading-message {
+  font-size: 18px;
+  color: #f39c12;
+  font-weight: bold;
+}
+
+/* Table Styles */
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.stock-table th,
+.stock-table td {
+  padding: 15px 20px;
+  text-align: left;
+  font-size: 16px;
+  color: #34495e;
+}
+
+.stock-table thead {
+  background-color: #e74c3c; /* Header color */
+  color: white;
+}
+
+.stock-table tbody tr:nth-child(even) {
+  background-color: #ecf0f1; /* Light gray alternate row color */
+}
+
+.stock-table tbody tr:hover {
+  background-color: #f0f0f0; /* Light hover effect */
+}
+
+.stock-table td {
+  border-bottom: 1px solid #ddd;
+}
+
+.stock-table td a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.stock-table td button {
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.stock-table td button:hover {
+  opacity: 0.9;
+}
+
+/* Approve Button */
+.approve-btn {
+  background-color: #2ecc71; /* Green for approval */
+  color: white;
+  border: none;
+}
+
+/* Reject Button */
+.reject-btn {
+  background-color: #e74c3c; /* Red for rejection */
+  color: white;
+  border: none;
+}
+
+/* Status Styles */
+.pending {
+  color: #f39c12; /* Orange for pending status */
+}
+
+.approved {
+  color: #2ecc71; /* Green for approved status */
+}
+
+.rejected {
+  color: #e74c3c; /* Red for rejected status */
+}
+
+/* Avatar (SPIT Logo) Styling */
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  border-radius: 50%;
+}
+
+/* Button Styles */
+button {
+  padding: 12px 18px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  border: none;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
   .navbarParent {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transform: translateY(-130%);
-    gap: 5%;
+    flex-direction: column;
   }
-  
+
   .nav-item {
-    color: white;
-    cursor: pointer;
+    margin-bottom: 10px;
     padding: 10px 20px;
-  }
-  
-  .nav-item:hover {
-    background-color: #df4534;
-  }
-  
-  /* Content and Table Styles */
-  .content {
-    display: flex;
-    padding: 20px;
-  }
-  
-  .stock-table {
     width: 100%;
-    border-collapse: collapse;
-    margin: 20px;
+    text-align: center;
   }
-  
-  .stock-table th,
-  .stock-table td {
-    padding: 10px;
-    text-align: left;
+
+  .content {
+    padding: 20px;
+    margin: 10px;
   }
-  
-  .stock-table thead {
-    background-color: #e74c3c; /* Header color */
-    color: #fff; /* Header text color */
+
+  .stock-table th, .stock-table td {
+    padding: 12px 15px;
+    font-size: 14px;
   }
-  
-  .stock-table tbody tr:nth-child(even) {
-    background-color: #ffe6e6; /* Alternate row color */
+}
+
+@media (max-width: 600px) {
+  .stock-table {
+    font-size: 14px;
   }
-  
-  .approve-btn {
-    background-color: green; /* Approve button color */
-    color: white; /* Approve button text color */
-    padding: 5px 10px;
-    border: none;
-    cursor: pointer;
+
+  .stock-table td button {
+    font-size: 12px;
   }
-  
-  .reject-btn {
-    background-color: red; /* Reject button color */
-    color: white; /* Reject button text color */
-    padding: 5px 10px;
-    border: none;
-    cursor: pointer;
+
+  .approve-btn, .reject-btn {
+    font-size: 14px;
+    padding: 6px 14px;
   }
-  
-  .pending {
-    color: orange; /* Pending status color */
-  }
-  
-  .approved {
-    color: green; /* Approved status color */
-  }
-  
-  .rejected {
-    color: red; /* Rejected status color */
-  }
+}

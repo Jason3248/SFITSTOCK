@@ -1,200 +1,130 @@
-
-import { useLocation, useNavigate } from 'react-router-dom'; // Import navigate for redirection
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { AppBar, Toolbar, Typography, Button, Box, Grid, Container, Card, CardContent, CardActions, Divider } from '@mui/material';
 import StockQuery from './StockQuery';
-import '../styles/hodPage.css'
 import Profile from './Profile';
-import ViewStocks from './ViewStocks';
-// function HODPage() {
-//   const location = useLocation();
-//   const navigate = useNavigate();
-//   const { department } = location.state || {}; // Retrieve department from route state
+import '../styles/hodPage.css';
 
-//   const [stocks, setStocks] = useState([]);
-//   const [filteredStocks, setFilteredStocks] = useState([]);
-//   const [rejectionReason, setRejectionReason] = useState('');
-//   const [selectedOptions, setSelectedOptions] = useState('');
-
-//   // Redirect to login if no department is passed
-//   useEffect(() => {
-//     if (!department) {
-//       alert('No department found! Redirecting to login page.');
-//       navigate('/login'); // Redirect to login if department is not found
-//     } else {
-//       fetchStocks();
-//     }
-//   }, [department, navigate]);
-
-//   // Fetch stocks for the selected department
-//   const fetchStocks = async () => {
-//     try {
-//       const res = await axios.get(`http://localhost:5000/api/items/getstocks/${department}`);
-//       setStocks(res.data);
-//       setFilteredStocks(res.data); // Initialize filteredStocks with all data
-//     } catch (err) {
-//       console.error("Error fetching items", err);
-//     }
-//   };
-
-//   const handleApproval = async (id, status) => {
-//     let reason = '';
-//     if (status === 'rejected') {
-//       reason = prompt('Please enter the reason for rejection:');
-//       setRejectionReason(reason);
-//     }
-//     try {
-//       const encodedId = encodeURIComponent(id);
-//       await axios.put(`http://localhost:5000/api/items/approve/${department}/${encodedId}`, {
-//         hodApprovalStatus: status,
-//         rejectionReason: reason,
-//       });
-//       fetchStocks(); // Refresh stocks after updating
-//     } catch (err) {
-//       console.error("Error updating approval status", err);
-//     }
-//   };
-
-//   return (
-//     <div className="App">
-//       {/* Sidebar Navigation */}
-//       <div className="">
-//         <div className="">
-//           <button onClick={() => setSelectedOptions('Main Page')}>View Stocks</button>
-//         </div>
-//         <div>
-//           <button onClick={() => setSelectedOptions('Fetch Stocks')}>Fetch Stocks</button>
-//         </div>
-//         <div>
-//           <button onClick={() => setSelectedOptions('Update Profile')}>Update Profile</button>
-//         </div>
-//       </div>
-
-//       <div className="content">
-//         {/* Conditionally render components based on the selected option */}
-//         {selectedOptions === 'Fetch Stocks' && <StockQuery />}
-
-//         {selectedOptions === 'Main Page' && (
-//           <>
-//             <h1>Page Of the HOD of the {department} Department</h1>
-//             {filteredStocks.length === 0 ? (
-//               <p className="no-stocks-message">No stocks available at the moment.</p>
-//             ) : (
-//               <table className="stock-table">
-//                 <thead>
-//                   <tr>
-//                     <th>Asset Head</th>
-//                     <th>Specification</th>
-//                     <th>Vendor Name</th>
-//                     <th>Quantity</th>
-//                     <th>Batch No</th>
-//                     <th>Date of Purchase</th>
-//                     <th>Total Amount</th>
-//                     <th>Room No</th>
-//                     <th>Invoice</th>
-//                     <th>Department</th>
-//                     <th>Approval By HOD</th>
-//                     <th>Actions</th>
-//                   </tr>
-//                 </thead>
-//                 <tbody>
-//                   {filteredStocks.map((stock) => (
-//                     <tr key={stock._id}>
-//                       <td>{stock.assetHeads}</td>
-//                       <td>{stock.specification}</td>
-//                       <td>{stock.vendorName}</td>
-//                       <td>{stock.quantity}</td>
-//                       <td>{stock.batchNo}</td>
-//                       <td>{stock.dateOfPurchase}</td>
-//                       <td>{stock.totalAmount}</td>
-//                       <td>{stock.roomNo}</td>
-//                       <td>{stock.bills ? (
-//                           <a href={stock.bills} target="_blank" rel="noopener noreferrer">
-//                             View Invoice
-//                           </a>
-//                         ) : (
-//                           "No Invoice"
-//                         )}</td>
-//                       <td>{stock.allocatedDept}</td>
-//                       <td>{stock.hodApprovalStatus}</td>
-//                       <td>
-//                       {stock.hodApprovalStatus === "pending" ? (
-//                           <>
-//                             <button className="approve-btn" onClick={() => handleApproval(stock._id, "approved")}>
-//                               Approve
-//                             </button>
-//                             <button className="reject-btn" onClick={() => handleApproval(stock._id, "rejected")}>
-//                               Reject
-//                             </button>
-//                           </>
-//                         ) : (
-//                           <span>{stock.hodApprovalStatus.toUpperCase()}</span>
-//                         )}
-//                       </td>
-//                     </tr>
-//                   ))}
-//                 </tbody>
-//               </table>
-//             )}
-//           </>
-//         )}
-//         {
-//           selectedOptions === 'Update Profile' && (
-//             <Profile />
-//           )
-//         }
-//       </div>
-//     </div>
-//   );
-// }
 function HODPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { department } = location.state || {}; 
-  const [selectedOptions, setSelectedOptions] = useState('');
+  const { department } = location.state || {}; // Retrieve department from route state
 
- 
+  const [stocks, setStocks] = useState([]);
+  const [filteredStocks, setFilteredStocks] = useState([]);
+  const [selectedOption, setSelectedOption] = useState('');
+
+  // Redirect to login if no department is passed
   useEffect(() => {
     if (!department) {
       alert('No department found! Redirecting to login page.');
-      navigate('/login'); 
-   
-  }}, [department, navigate]);
+      navigate('/login');
+    } else {
+      fetchStocks();
+    }
+  }, [department, navigate]);
 
-
-  // Fetch stocks for the selected department
-  // const fetchStocks = async () => {
-  //   try {
-  //     const res = await axios.get(`http://localhost:5000/api/items/getstocks/${department}`);
-  //     setStocks(res.data);
-  //     setFilteredStocks(res.data); // Initialize filteredStocks with all data
-  //   } catch (err) {
-  //     console.error("Error fetching items", err);
-  //   }
-  // };
+  const fetchStocks = async () => {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/items/getstocks/${department}`);
+      setStocks(res.data);
+      setFilteredStocks(res.data); // Initialize filteredStocks with all data
+    } catch (err) {
+      console.error('Error fetching items', err);
+    }
+  };
 
   return (
     <div className="App">
-   
-      <div className="sidebar">
-        <button onClick={() => setSelectedOptions('View Stocks')}>View Stocks</button>
-        <button onClick={() => setSelectedOptions('Fetch Stocks')}>Fetch Stocks</button>
-        <button onClick={() => setSelectedOptions('Update Profile')}>Update Profile</button>
-      </div>
+      {/* AppBar for Navbar */}
+      <AppBar position="sticky">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            HOD Dashboard - {department} Department
+          </Typography>
+          <Button color="inherit" onClick={() => navigate('/login')}>Logout</Button>
+        </Toolbar>
+      </AppBar>
 
-      <div className="content">
-        
-        {selectedOptions === 'Fetch Stocks' && <StockQuery />}
+      {/* Main content */}
+      <Box sx={{ p: 3 }}>
+        <Container maxWidth="lg">
+          {/* Navigation Buttons */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <Button variant="contained" color="primary" onClick={() => setSelectedOption('Main Page')} sx={{ mr: 2 }}>
+              View Stocks
+            </Button>
+            <Button variant="contained" color="primary" onClick={() => setSelectedOption('Fetch Stocks')} sx={{ mr: 2 }}>
+              Fetch Stocks
+            </Button>
+            <Button variant="contained" color="primary" onClick={() => setSelectedOption('Update Profile')}>
+              Update Profile
+            </Button>
+          </Box>
 
-        {selectedOptions === 'View Stocks' && <ViewStocks />}
+          {/* Conditional Render based on selected option */}
+          {selectedOption === 'Fetch Stocks' && <StockQuery />}
 
-        {selectedOptions === 'Update Profile' && <Profile />}
-      </div>
+          {selectedOption === 'Main Page' && (
+            <>
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                Stocks for {department} Department
+              </Typography>
+              {filteredStocks.length === 0 ? (
+                <Typography>No stocks available at the moment.</Typography>
+              ) : (
+                <Grid container spacing={2}>
+                  {filteredStocks.map((stock) => (
+                    <Grid item xs={12} sm={6} md={4} key={stock._id}>
+                      <Card sx={{ minWidth: 275 }}>
+                        <CardContent>
+                          <Typography variant="h6" component="div">
+                            {stock.assetHeads}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Specification: {stock.specification}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Vendor: {stock.vendorName}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Quantity: {stock.quantity}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Batch No: {stock.batchNo}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Date of Purchase: {stock.dateOfPurchase}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Amount: ₹{stock.totalAmount}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Room No: {stock.roomNo}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Dept: {stock.allocatedDept}
+                          </Typography>
+                        </CardContent>
+                        <CardActions>
+                          <Button size="small" href={stock.bills} target="_blank" variant="outlined">
+                            View Invoice
+                          </Button>
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </>
+          )}
+
+          {selectedOption === 'Update Profile' && <Profile />}
+        </Container>
+      </Box>
     </div>
   );
 }
 
-
-
 export default HODPage;
-

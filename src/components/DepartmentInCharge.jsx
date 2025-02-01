@@ -1,118 +1,39 @@
-
 import { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  Container,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Box
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
+import CancelIcon from "@mui/icons-material/Cancel";
 
-// function DepartmentInCharge({ department }) {
-//   const [stocks, setStocks] = useState([]);
-//   const [roomNo, setRoomNo] = useState("");
-//   const [quantity, setQuantity] = useState("");
-
-//   console.log("Department received in component:", department);
-
-//   const fetchStocks = async () => {
-//     if (!department) return;
-//     try {
-//       const res = await axios.get(`http://localhost:5000/api/items/department/${department}`);
-//       console.log("API Response:", res.data);
-//       setStocks(res.data);
-//     } catch (err) {
-//       console.error("Error fetching stocks", err);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchStocks();
-//   }, [department]);
-
-//   useEffect(() => {
-//     console.log("Updated stocks:", stocks);
-//   }, [stocks]);
-
-//   const assignRoomBulk = async () => {
-//     if (!roomNo || !quantity) {
-//       alert("Please enter Room No and Quantity.");
-//       return;
-//     }
-
-//     try {
-//       const res = await axios.put("http://localhost:5000/api/items/assignRooms", {
-//         department,
-//         roomNo,
-//         quantity: parseInt(quantity, 10)
-//       });
-
-//       console.log("Room assignment response:", res.data);
-//       alert(res.data.message);
-//       fetchStocks(); // Refresh stock list
-//     } catch (err) {
-//       console.error("Error updating room", err);
-//       alert("Failed to assign rooms.");
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h1>{department} Department In-Charge</h1>
-
-//       {/* Room No and Quantity Inputs */}
-//       <div style={{ marginBottom: "20px" }}>
-//         <input
-//           type="text"
-//           placeholder="Enter Room No"
-//           value={roomNo}
-//           onChange={(e) => setRoomNo(e.target.value)}
-//           style={{ marginRight: "10px" }}
-//         />
-//         <input
-//           type="number"
-//           placeholder="Enter Quantity"
-//           value={quantity}
-//           onChange={(e) => setQuantity(e.target.value)}
-//           min="1"
-//           style={{ marginRight: "10px" }}
-//         />
-//         <button onClick={assignRoomBulk}>Assign Room</button>
-//       </div>
-
-//       {/* Table to Display Stock */}
-//       <table>
-//         <thead>
-//           <tr>
-//             <th>Specification</th>
-//             <th>Vendor</th>
-//             <th>Batch No</th>
-//             <th>Room No</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {stocks.length === 0 ? (
-//             <tr>
-//               <td colSpan="4">No stocks available</td>
-//             </tr>
-//           ) : (
-//             stocks.map((stock) => (
-//               <tr key={stock._id}>
-//                 <td>{stock.specification}</td>
-//                 <td>{stock.vendorName}</td>
-//                 <td>{stock.batchNo}</td>
-//                 <td>{stock.roomNo || "Not Assigned"}</td>
-//               </tr>
-//             ))
-//           )}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// }
 function DepartmentInCharge({ department }) {
   const [groupedStocks, setGroupedStocks] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [roomAssignments, setRoomAssignments] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
 
+  // Fetch grouped stocks
   const fetchGroupedStocks = async () => {
     if (!department) return;
     try {
-      const res = await axios.get(`http://localhost:5000/api/items/departmentGrouped/${department}`);
+      const res = await axios.get(`http://localhost:3000/api/items/departmentGrouped/${department}`);
       setGroupedStocks(res.data);
     } catch (err) {
       console.error("Error fetching stocks", err);
@@ -123,126 +44,206 @@ function DepartmentInCharge({ department }) {
     fetchGroupedStocks();
   }, [department]);
 
+  // Open room assignment dialog
   const openRoomAssignment = (batch) => {
     setSelectedBatch(batch);
     setRoomAssignments([{ roomNo: "", quantity: "" }]);
+    setOpenDialog(true);
   };
 
+  // Handle input changes in room assignments
   const handleRoomChange = (index, field, value) => {
     const updatedAssignments = [...roomAssignments];
     updatedAssignments[index][field] = value;
     setRoomAssignments(updatedAssignments);
   };
 
+  // Add new room assignment input
   const addRoomAssignment = () => {
     setRoomAssignments([...roomAssignments, { roomNo: "", quantity: "" }]);
   };
 
-  // const assignRooms = async () => {
-  //   if (!selectedBatch) return;
-
-  //   try {
-  //     const res = await axios.put("http://localhost:5000/api/items/assignRooms", {
-  //       batchDetails: selectedBatch._id,
-  //       roomAssignments: roomAssignments.map(r => ({
-  //         roomNo: r.roomNo,
-  //         quantity: parseInt(r.quantity, 10)
-  //       }))
-  //     });
-
-  //     alert(res.data.message);
-  //     fetchGroupedStocks();
-  //     setSelectedBatch(null);
-  //   } catch (err) {
-  //     console.error("Error updating room", err);
-  //     alert("Failed to assign rooms.");
-  //   }
-  // };
+  // Assign rooms to batch
   const assignRooms = async () => {
     if (!selectedBatch || roomAssignments.length === 0) {
       alert("Please select a batch and enter at least one room assignment.");
       return;
     }
-  
+
     try {
-      const res = await axios.put("http://localhost:5000/api/items/assignRooms", {
-        batchDetails: {
-          specification: selectedBatch._id.specification,
-          vendorName: selectedBatch._id.vendorName,
-          batchNo: selectedBatch._id.batchNo,
-          dateOfPurchase: selectedBatch._id.dateOfPurchase, // Ensure this field exists
-          department: department
-        },
-        roomAssignments: roomAssignments.map(r => ({
+      const res = await axios.put("http://localhost:3000/api/items/assignRooms", {
+        batchDetails: selectedBatch._id,
+        roomAssignments: roomAssignments.map((r) => ({
           roomNo: r.roomNo,
-          quantity: parseInt(r.quantity, 10)
-        }))
+          quantity: parseInt(r.quantity, 10),
+        })),
       });
-  
+
       alert(res.data.message);
       fetchGroupedStocks();
+      setOpenDialog(false);
       setSelectedBatch(null);
     } catch (err) {
       console.error("Error updating room", err);
-      alert(err.response?.data?.error || "Failed to assign rooms.");
+      alert("Failed to assign rooms.");
     }
   };
-  
+
   return (
-    <div>
-      <h1>{department} Department In-Charge</h1>
+    <Container maxWidth="lg">
+      <Box sx={{ marginBottom: 4, textAlign: "center" }}>
+        <Typography variant="h4" sx={{ fontWeight: "bold", color: "#0D47A1" }}>
+          {department} Department In-Charge
+        </Typography>
+      </Box>
 
       {/* Table to Display Grouped Stock */}
-      <table>
-        <thead>
-          <tr>
-            <th>Specification</th>
-            <th>Vendor</th>
-            <th>Batch No</th>
-            <th>Quantity</th>
-            <th>Assign Room</th>
-          </tr>
-        </thead>
-        <tbody>
-          {groupedStocks.length === 0 ? (
-            <tr><td colSpan="5">No stocks available</td></tr>
-          ) : (
-            groupedStocks.map((batch, index) => (
-              <tr key={index}>
-                <td>{batch._id.specification}</td>
-                <td>{batch._id.vendorName}</td>
-                <td>{batch._id.batchNo}</td>
-                <td>{batch.totalQuantity}</td>
-                <td><button onClick={() => openRoomAssignment(batch)}>Assign Room</button></td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", color: "#0D47A1" }}>Specification</TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#0D47A1" }}>Vendor</TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#0D47A1" }}>Batch No</TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#0D47A1" }}>Quantity</TableCell>
+              <TableCell sx={{ fontWeight: "bold", color: "#0D47A1" }}>Assign Room</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {groupedStocks.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No stocks available
+                </TableCell>
+              </TableRow>
+            ) : (
+              groupedStocks.map((batch, index) => (
+                <TableRow key={index}>
+                  <TableCell>{batch._id.specification}</TableCell>
+                  <TableCell>{batch._id.vendorName}</TableCell>
+                  <TableCell>{batch._id.batchNo}</TableCell>
+                  <TableCell>{batch.totalQuantity}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => openRoomAssignment(batch)}
+                      startIcon={<AddIcon />}
+                      sx={{
+                        borderRadius: 1,
+                        padding: "6px 16px",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        backgroundColor: "#1976D2", // Primary Blue
+                        "&:hover": {
+                          backgroundColor: "#1565C0", // Hover Darker Blue
+                        },
+                      }}
+                    >
+                      Assign
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      {/* Room Assignment Modal */}
-      {selectedBatch && (
-        <div className="modal">
-          <h3>Assign Rooms for {selectedBatch._id.specification}</h3>
+      {/* Room Assignment Dialog */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ backgroundColor: "#1976D2", color: "#fff" }}>
+          Assign Rooms for {selectedBatch?._id.specification}
+        </DialogTitle>
+        <DialogContent>
           {roomAssignments.map((room, index) => (
-            <div key={index}>
-              <input type="text" placeholder="Room No" value={room.roomNo} onChange={(e) => handleRoomChange(index, "roomNo", e.target.value)} />
-              <input type="number" placeholder="Quantity" value={room.quantity} onChange={(e) => handleRoomChange(index, "quantity", e.target.value)} />
-            </div>
+            <Grid container spacing={2} key={index} sx={{ marginBottom: 2 }}>
+              <Grid item xs={6}>
+                <TextField
+                  label="Room No"
+                  variant="outlined"
+                  fullWidth
+                  value={room.roomNo}
+                  onChange={(e) => handleRoomChange(index, "roomNo", e.target.value)}
+                  sx={{ borderRadius: 1 }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Quantity"
+                  variant="outlined"
+                  type="number"
+                  fullWidth
+                  value={room.quantity}
+                  onChange={(e) => handleRoomChange(index, "quantity", e.target.value)}
+                  min="1"
+                  sx={{ borderRadius: 1 }}
+                />
+              </Grid>
+            </Grid>
           ))}
-          <button onClick={addRoomAssignment}>+ Add Room</button>
-          <button onClick={assignRooms}>Confirm</button>
-        </div>
-      )}
-    </div>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={addRoomAssignment}
+            sx={{
+              marginBottom: 2,
+              borderRadius: 1,
+              textTransform: "none",
+              fontWeight: "bold",
+              borderColor: "#1976D2", // Primary Blue Border
+              color: "#1976D2", // Primary Blue Text
+              "&:hover": {
+                backgroundColor: "#1976D2",
+                color: "#fff",
+              },
+            }}
+          >
+            Add Room
+          </Button>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={assignRooms}
+            startIcon={<CheckIcon />}
+            sx={{
+              borderRadius: 1,
+              textTransform: "none",
+              fontWeight: "bold",
+              backgroundColor: "#1976D2", // Primary Blue
+              "&:hover": {
+                backgroundColor: "#1565C0", // Hover Darker Blue
+              },
+            }}
+          >
+            Confirm
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setOpenDialog(false)}
+            startIcon={<CancelIcon />}
+            sx={{
+              borderRadius: 1,
+              textTransform: "none",
+              fontWeight: "bold",
+              borderColor: "#0D47A1", // Secondary Blue Border
+              color: "#0D47A1", // Secondary Blue Text
+              "&:hover": {
+                backgroundColor: "#0D47A1",
+                color: "#fff",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 }
 
-
 export default DepartmentInCharge;
-
-
-
-
-
-

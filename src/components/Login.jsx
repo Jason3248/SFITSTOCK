@@ -21,7 +21,7 @@
 
 //   const fetchDepartments = async () => {
 //     try {
-//       const response = await fetch('http://localhost:5000/api/admin/config'); // Adjust URL for fetching department list
+//       const response = await fetch('http://localhost:3000/api/admin/config'); // Adjust URL for fetching department list
 //       const data = await response.json();
 //       setDepartments(data.allocatedDept); // Assuming the departments come in a `departments` array
 //     } catch (error) {
@@ -52,7 +52,7 @@
 
 //   const departmentInChargeLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:5000/api/auth/login', {
+//       const response = await fetch('http://localhost:3000/api/auth/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@
 
 //   const userLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:5000/api/auth/login', {
+//       const response = await fetch('http://localhost:3000/api/auth/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@
 
 //   const hodLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:5000/api/auth/login', {
+//       const response = await fetch('http://localhost:3000/api/auth/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@
 
 //   const adminLogin = async (credentials) => {
 //     try {
-//       const response = await fetch('http://localhost:5000/api/admin/login', {
+//       const response = await fetch('http://localhost:3000/api/admin/login', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',
@@ -321,7 +321,7 @@ const Login = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/config'); // Adjust URL for fetching department list
+      const response = await fetch('http://localhost:3000/api/admin/config'); // Adjust URL for fetching department list
       const data = await response.json();
       setDepartments(data.allocatedDept);
     } catch (error) {
@@ -351,7 +351,7 @@ const Login = () => {
   };
   const userLogin = async (credentials) => {
         try {
-          const response = await fetch('http://localhost:5000/api/auth/login', {
+          const response = await fetch('http://localhost:3000/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -400,7 +400,7 @@ const Login = () => {
 
   const departmentInChargeLogin = async (credentials) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -431,7 +431,7 @@ const Login = () => {
 
   const hodLogin = async (credentials) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -462,7 +462,7 @@ const Login = () => {
 
   const adminLogin = async (credentials) => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/login', {
+      const response = await fetch('http://localhost:3000/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

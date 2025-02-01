@@ -5,63 +5,54 @@
     height: 100vh;
     background-color: #f7f8fa;
     font-family: 'Arial', sans-serif;
+    color: #000000;
 }
 
 /* Navbar styles */
 .navbar {
-    background-color: #f75b41;
-    color: white;
-    padding: 10px 20px;
+    background-color: #003366; /* Deep blue for HOD */
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
 }
 
 .navbar .title {
     font-weight: bold;
-    font-size: 24px;
+    font-size: 28px;
+    color: white;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .navbar button {
     background: transparent;
     border: none;
     color: white;
-    font-size: 16px;
-    margin-right: 20px;
+    font-size: 18px;
+    margin-left: 20px;
     cursor: pointer;
+    transition: color 0.3s ease;
 }
 
 .navbar button:hover {
-    color: #f0f0f0;
-}
-
-.navbar .profile {
-    display: flex;
-    align-items: center;
-}
-
-.navbar .profile img {
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-}
-
-.navbar .profile-name {
-    font-weight: bold;
+    color: #ff6347; /* Highlight color for buttons */
 }
 
 /* Content area styles */
 .content {
-    padding: 20px;
+    padding: 30px 40px;
     flex-grow: 1;
     background-color: #f7f8fa;
     display: flex;
     flex-direction: column;
+    margin-top: 20px;
 }
 
 .content h2 {
-    font-size: 24px;
+    font-size: 28px;
     color: #e74c3c;
     text-transform: uppercase;
     font-weight: bold;
@@ -71,18 +62,18 @@
 /* Form styles */
 .stock-form {
     background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columns per row */
-    gap: 50px; /* Space between form fields */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
 }
 
 .stock-form label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     font-weight: bold;
     color: #34495e;
 }
@@ -90,30 +81,47 @@
 .stock-form input,
 .stock-form select {
     width: 100%;
-    padding: 10px;
-    border-radius: 4px;
+    padding: 12px;
+    border-radius: 8px;
     border: 1px solid #bdc3c7;
-    font-size: 14px;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
 }
 
 .stock-form input[type="file"] {
-    padding: 5px;
+    padding: 8px;
 }
 
+.stock-form input:focus,
+.stock-form select:focus {
+    border-color: #3498db; /* Change focus color to blue */
+    outline: none;
+}
+
+/* Updated smaller button styles */
 .stock-form button {
-    grid-column: span 3; /* Make the button span across all 3 columns */
-    background-color: #e74c3c;
+    grid-column: span 3;
+    background-color: #3498db; /* Blue button background */
     color: white;
     border: none;
-    padding: 12px 20px;
-    font-size: 16px;
+    padding: 10px 15px; /* Reduced padding */
+    font-size: 16px; /* Reduced font size */
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+    border-radius: 8px;
+    text-transform: uppercase;
+    max-width: 200px; /* Restrict width to ensure a compact button */
+    margin: 0 auto; /* Center the button */
 }
 
 .stock-form button:hover {
-    background-color: #9c2315;
+    background-color: #2980b9; /* Darker blue for hover effect */
+    transform: translateY(-2px); /* Slight lift effect on hover */
+}
+
+.stock-form button:active {
+    background-color: #1f598a; /* Even darker blue on click */
+    transform: translateY(0); /* Reset lift effect */
 }
 
 /* Table styles */
@@ -121,26 +129,26 @@
     width: 100%;
     border-collapse: collapse;
     background-color: white;
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
 .styled-table thead {
-    background-color: #e74c3c;
+    background-color: #3498db;
     color: white;
     font-weight: bold;
 }
 
 .styled-table th,
 .styled-table td {
-    padding: 5px;
+    padding: 12px;
     text-align: center;
-    font-size: small;
+    font-size: 14px;
 }
 
 .styled-table tbody tr:nth-child(odd) {
-    background-color: #FFDDD9;
+    background-color: #f1f4f7;
 }
 
 .styled-table tbody tr:nth-child(even) {
@@ -148,7 +156,7 @@
 }
 
 .styled-table tbody tr:hover {
-    background-color: #f1f1f1;
+    background-color: #ecf0f1;
     cursor: pointer;
 }
 
@@ -160,60 +168,65 @@
 
 .edit-btn,
 .styled-table .delete-btn {
-    background-color: #e74c3c;
-    color: black;
-    border-radius: 4px;
-    padding: 5px;
+    background-color: #3498db; /* Blue button for actions */
+    color: white;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
 }
 
 .styled-table .action-icon {
-    margin: 0 5px;
+    margin: 0 6px;
+}
+
+.edit-btn:hover,
+.styled-table .delete-btn:hover {
+    background-color: #2980b9; /* Darker blue for hover effect */
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .purchase-in-charge-container {
-        padding: 10px;
+        padding: 20px;
     }
 
-    .styled-table th,
-    .styled-table td {
-        padding: 10px;
+    .navbar .title {
+        font-size: 22px;
     }
 
-    /* Adjust the form layout on smaller screens */
+    .navbar button {
+        font-size: 16px;
+    }
+
     .stock-form {
-        grid-template-columns: 1fr; /* Single column layout for small screens */
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
 
     .stock-form button {
-        grid-column: span 1; /* Button takes full width on smaller screens */
+        grid-column: span 1;
     }
 }
 
-.sidebar {
-    background-color: #f05a46;
-    width: 50%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    top: 5%;
-}
+@media (max-width: 768px) {
+    .content {
+        padding: 15px;
+    }
 
-.sidebarParent {
-    width: 95%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 2%;
-}
+    .navbar {
+        flex-direction: column;
+        padding: 15px;
+    }
 
-button {
-    border: none;
-    background: none;
-    color: rgb(255, 255, 255);
-    font-size: 1rem;
-    font-weight: bold;
-    letter-spacing: 0.2px;
+    .navbar .title {
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
+    .navbar button {
+        font-size: 16px;
+        margin-left: 0;
+        margin-top: 10px;
+    }
 }

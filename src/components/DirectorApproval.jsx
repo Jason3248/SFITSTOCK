@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import StockQuery from './StockQuery';
-import '../styles/directorapproval.css'; // Assuming you have styles here for the director page
+import '../styles/directorapproval.css';
 
 function DirectorApproval() {
   const [pendingStocks, setPendingStocks] = useState([]);
@@ -13,7 +13,7 @@ function DirectorApproval() {
   const fetchPendingStocks = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/items/director-pending');
+      const res = await axios.get('http://localhost:3000/api/items/director-pending');
       setPendingStocks(res.data);
       setLoading(false);
     } catch (err) {
@@ -35,7 +35,7 @@ function DirectorApproval() {
     }
     try {
       const encodedId = encodeURIComponent(id);
-      await axios.put(`http://localhost:5000/api/items/director/${encodedId}`, {
+      await axios.put(`http://localhost:3000/api/items/director/${encodedId}`, {
         directorApprovalStatus: status,
         rejectionReason: reason,
       });
@@ -64,7 +64,7 @@ function DirectorApproval() {
 
             {/* Display loading message when fetching data */}
             {loading ? (
-              <p>Loading pending stocks...</p>
+              <p className="loading-message">Loading pending stocks...</p>
             ) : (
               <table className="stock-table">
                 <thead>
