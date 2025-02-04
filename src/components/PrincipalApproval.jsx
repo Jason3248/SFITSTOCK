@@ -5,6 +5,7 @@ import StockQuery from "./StockQuery";
 import SPITLogoGif from "../components/assets/sfit_logo.gif";  // Assuming the logo is stored as 'sfit_logo.gif' in the 'assets' folder
 import '../styles/principalapproval.css';
 import ViewStocks from "./ViewStocks";
+import Profile from "./Profile";
 function PrincipalApproval() {
   const [stocks, setStocks] = useState([]);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -80,48 +81,27 @@ function PrincipalApproval() {
             sx={{ width: 40, height: 40, marginRight: 2 }}
           />
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Principal Approval Dashboard
+            Principal Dashboard
           </Typography>
-          <Button color="inherit" onClick={() => setSelectedOption('View Stocks')}>View Stocks</Button>
-          <Button color="inherit" onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</Button>
           <Button color="inherit" onClick={() => logout()}>Logout</Button>
         </Toolbar>
       </AppBar>
 
-      {/* Main Content */}
-      <Container maxWidth="lg" sx={{ marginTop: 4 }}>
-        {/* Conditionally render the StockQuery component when "Fetch Stocks" is selected */}
-        {selectedOption === 'Fetch Stocks' && <StockQuery />}
+      <Box sx={{ p: 3 }}>
+        <Container maxWidth="lg">   
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Button variant="contained" color="primary" onClick={() => setSelectedOption('View Stocks')}>View Stocks</Button>
+          <Button variant="contained" color="primary" onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</Button>
+          <Button variant="contained" color="primary" onClick={() => setSelectedOption('Update Profile')}>Update Profile</Button>
+          </Box>
 
-        {/* Display stock approval list when "Main Page" is selected */}
-        {selectedOption === 'View Stocks' && (
-          <ViewStocks />
-        )}
-      </Container>
+          {selectedOption === 'Fetch Stocks' && <StockQuery />}
+          {selectedOption === 'View Stocks' &&  <ViewStocks />}
+          {selectedOption === 'Update Profile' && <Profile />}
+        </Container>
+      </Box>
+      
 
-      {/* Rejection Reason Dialog */}
-      {/* <Dialog open={openDialog} onClose={handleDialogClose}>
-        <DialogTitle>Rejection Reason</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" color="textSecondary" gutterBottom>
-            Please provide a reason for rejecting this stock.
-          </Typography>
-          <textarea
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            rows={4}
-            style={{ width: '100%', padding: '8px', borderRadius: '5px', border: '1px solid #ccc' }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleRejectWithReason} color="error">
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog> */}
     </div>
   );
 }

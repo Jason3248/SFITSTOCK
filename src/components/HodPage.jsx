@@ -36,6 +36,12 @@ function HODPage() {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userLevel');
+    window.location.href = '/login';
+  };
+
   return (
     <div className="App">
       {/* AppBar for Navbar */}
@@ -44,11 +50,11 @@ function HODPage() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             HOD Dashboard - {department} Department
           </Typography>
-          <Button color="inherit" onClick={() => navigate('/login')}>Logout</Button>
+          <Button color="inherit" onClick={() => logout()}>Logout</Button>
         </Toolbar>
       </AppBar>
 
-      {/* Main content */}
+  
       <Box sx={{ p: 3 }}>
         <Container maxWidth="lg">
           {/* Navigation Buttons */}
@@ -64,68 +70,9 @@ function HODPage() {
             </Button>
           </Box>
 
-          {/* Conditional Render based on selected option */}
+          
           {selectedOption === 'Fetch Stocks' && <StockQuery />}
-
-          {/* {selectedOption === 'Main Page' && (
-            <>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                Stocks for {department} Department
-              </Typography>
-              {filteredStocks.length === 0 ? (
-                <Typography>No stocks available at the moment.</Typography>
-              ) : (
-                <Grid container spacing={2}>
-                  {filteredStocks.map((stock) => (
-                    <Grid item xs={12} sm={6} md={4} key={stock._id}>
-                      <Card sx={{ minWidth: 275 }}>
-                        <CardContent>
-                          <Typography variant="h6" component="div">
-                            {stock.assetHeads}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Specification: {stock.specification}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Vendor: {stock.vendorName}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Quantity: {stock.quantity}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Batch No: {stock.batchNo}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Date of Purchase: {stock.dateOfPurchase}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Amount: ₹{stock.totalAmount}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Room No: {stock.roomNo}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Dept: {stock.allocatedDept}
-                          </Typography>
-                        </CardContent>
-                        <CardActions>
-                          <Button size="small" href={stock.bills} target="_blank" variant="outlined">
-                            View Invoice
-                          </Button>
-                        </CardActions>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              )}
-            </>
-          )} */}
-          {
-            selectedOption === 'View Stocks' && (
-              <DeptViewStocks department={department}/>
-            )
-          }
-
+          {selectedOption === 'View Stocks' && <DeptViewStocks department={department}/> }
           {selectedOption === 'Update Profile' && <Profile />}
         </Container>
       </Box>

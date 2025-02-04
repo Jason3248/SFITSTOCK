@@ -7,18 +7,24 @@ const StockQuery = () => {
     const [stockType, setStockType] = useState('');
     const [allocatedDept, setAllocatedDept] = useState('');
     const [specification, setSpecification] = useState('');
+    const [assetHead, setAssetHead] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [minAmount, setMinAmount] = useState('');
     const [maxAmount, setMaxAmount] = useState('');
     const [results, setResults] = useState([]);
     const [allocatedDepartments, setAllocatedDepartments] = useState([]);
+    const [assetHeads, setAssetHeads] = useState([]);
   
     useEffect(() => {
       const fetchConfig = async () => {
         try {
           const res = await axios.get('http://localhost:5000/api/admin/config');
           setAllocatedDepartments(res.data.allocatedDept || []);
+          setAssetHeads(res.data.assetHeads || []);
+          console.log(assetHeads);
+          console.log(allocatedDepartments);
+          
         } catch (err) {
           console.error('Error fetching config', err);
         }
@@ -33,7 +39,7 @@ const StockQuery = () => {
         return;
       }
   
-      const query = { stockType, allocatedDept, specification, startDate, endDate, minAmount, maxAmount };
+      const query = { stockType, allocatedDept, assetHead, specification, startDate, endDate, minAmount, maxAmount };
   
       try {
         const res = await axios.post("http://localhost:5000/api/items/search", query);
@@ -54,6 +60,7 @@ const StockQuery = () => {
         "Vendor Name": batch._id.vendorName,
         "Batch No": batch._id.batchNo,
         "Allocated Dept": batch._id.allocatedDept,
+        "Asset Head": batch._id.assetHeads,
         "Quantity": batch.totalQuantity,
         "Total Amount": `₹${batch.totalAmount}`,
         "Date of Purchase": new Date(batch._id.dateOfPurchase).toLocaleDateString()
@@ -80,6 +87,15 @@ const StockQuery = () => {
               <option key={dept} value={dept}>{dept}</option>
             ))}
           </select>
+          <select 
+          onChange={(e) => setAssetHead(e.target.value)}>
+            <option value="">Select Asset head</option>
+            {
+              assetHeads.map((item) => {
+                return (<option key={item} value={item}>{item}</option>)
+              })
+            }
+            </select>
           <input type="text" placeholder="Specification" onChange={(e) => setSpecification(e.target.value)} />
           <input type="date" placeholder="Start Date" onChange={(e) => setStartDate(e.target.value)} />
           <input type="date" placeholder="End Date" onChange={(e) => setEndDate(e.target.value)} />
@@ -101,6 +117,7 @@ const StockQuery = () => {
                   <th>Vendor Name</th>
                   <th>Batch No</th>
                   <th>Department</th>
+                  <th>Asset Head</th>
                   <th>Quantity</th>
                   <th>Total Amount</th>
                   <th>Date of Purchase (Format: MM-DD-YYYY)</th>
@@ -113,6 +130,7 @@ const StockQuery = () => {
                     <td>{batch._id.vendorName}</td>
                     <td>{batch._id.batchNo}</td>
                     <td>{batch._id.allocatedDept}</td>
+                    <td>{batch._id.assetHeads}</td>
                     <td>{batch.totalQuantity}</td>
                     <td>₹{Math.round(batch.totalAmount)}</td>
                     <td>{new Date(batch._id.dateOfPurchase).toLocaleDateString()}</td>

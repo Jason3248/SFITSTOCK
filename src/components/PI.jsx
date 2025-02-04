@@ -40,6 +40,8 @@ function PurchaseInCharge() {
       const res = await axios.get("http://localhost:5000/api/admin/config");
       setAssetHeads(res.data.assetHeads || []);
       setAllocatedDepartments(res.data.allocatedDept || []);
+      console.log(allocatedDepartments);
+      
     } catch (err) {
       console.error("Error fetching config", err);
     }

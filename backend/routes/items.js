@@ -1773,7 +1773,7 @@ router.post('/export-excel', async (req, res) => {
 
 router.post("/search", async (req, res) => {
   try {
-    const { stockType, allocatedDept, specification, startDate, endDate, minAmount, maxAmount } = req.body;
+    const { stockType, allocatedDept, assetHead, specification, startDate, endDate, minAmount, maxAmount } = req.body;
 
     let collection = stockType === "institutional" ? instStock : deptStock;
 
@@ -1781,6 +1781,7 @@ router.post("/search", async (req, res) => {
     let preGroupMatch = {};
     if (allocatedDept) preGroupMatch.allocatedDept = allocatedDept;
     if (specification) preGroupMatch.specification = specification;
+    if (assetHead) preGroupMatch.assetHeads = assetHead;
 
     const aggregationPipeline = [
       // Step 2: Convert dateOfPurchase from string to Date
@@ -1811,6 +1812,7 @@ router.post("/search", async (req, res) => {
             vendorName: "$vendorName",
             batchNo: "$batchNo",
             allocatedDept: "$allocatedDept",
+            assetHeads: "$assetHeads",
             dateOfPurchase: "$dateOfPurchase"
           },
           totalQuantity: { $sum: 1 },

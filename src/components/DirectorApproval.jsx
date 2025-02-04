@@ -3,6 +3,11 @@ import axios from 'axios';
 import StockQuery from './StockQuery';
 import '../styles/directorapproval.css';
 import ViewStocks from './ViewStocks';
+import Profile from './Profile';
+import { AppBar, Toolbar, Typography, Button, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Box, Avatar } from "@mui/material";
+
+import SPITLogoGif from "../components/assets/sfit_logo.gif";
+
 function DirectorApproval() {
   const [pendingStocks, setPendingStocks] = useState([]);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -52,92 +57,38 @@ function DirectorApproval() {
 
   return (
     <>
-      {/* Sidebar Navigation */}
-      <div className="navbarParent">
-        <div className="nav-item" onClick={() => setSelectedOption('View stocks')}>View Stocks</div>
-        <div className="nav-item" onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</div>
-        <div className="nav-item" onClick={() => logout()}>Logout</div>
-      </div>
+       <div className="App">
+      {/* AppBar with Logo and Navigation */}
+      <AppBar position="sticky" color="primary">
+        <Toolbar>
+          <Avatar 
+            alt="SPIT Logo" 
+            src={SPITLogoGif} 
+            sx={{ width: 40, height: 40, marginRight: 2 }}
+          />
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Director Dashboard
+          </Typography>
+          <Button color="inherit" onClick={() => logout()}>Logout</Button>
+        </Toolbar>
+      </AppBar>
 
-      <div className="content">
-        {/* Conditionally render StockQuery component */}
-        {selectedOption === 'Fetch Stocks' && <StockQuery />}
+      <Box sx={{ p: 3 }}>
+        <Container maxWidth="lg">   
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Button variant="contained" color="primary" onClick={() => setSelectedOption('View Stocks')}>View Stocks</Button>
+          <Button variant="contained" color="primary" onClick={() => setSelectedOption('Fetch Stocks')}>Fetch Stocks</Button>
+          <Button variant="contained" color="primary" onClick={() => setSelectedOption('Update Profile')}>Update Profile</Button>
+          </Box>
 
-        {/* Display pending stock items when on Main Page */}
-        {selectedOption === 'View Stocks' && (
-          // <div>
-          //   <h2>Pending Director Approvals</h2>
+          {selectedOption === 'Fetch Stocks' && <StockQuery />}
+          {selectedOption === 'View Stocks' &&  <ViewStocks />}
+          {selectedOption === 'Update Profile' && <Profile />}
+        </Container>
+      </Box>
+      
 
-          //   {/* Display loading message when fetching data */}
-          //   {loading ? (
-          //     <p className="loading-message">Loading pending stocks...</p>
-          //   ) : (
-          //     <table className="stock-table">
-          //       <thead>
-          //         <tr>
-          //           <th>Asset Heads</th>
-          //           <th>Vendor Name</th>
-          //           <th>Quantity</th>
-          //           <th>Department</th>
-          //           <th>Invoice</th>
-          //           <th>HOD Approval</th>
-          //           <th>Principal Approval</th>
-          //           <th>Actions</th>
-          //         </tr>
-          //       </thead>
-          //       <tbody>
-          //         {pendingStocks.length === 0 ? (
-          //           <tr>
-          //             <td colSpan="8">No pending approvals at the moment.</td>
-          //           </tr>
-          //         ) : (
-          //           pendingStocks.map((stock) => (
-          //             <tr key={stock._id}>
-          //               <td>{stock.assetHeads.join(', ')}</td>
-          //               <td>{stock.vendorName}</td>
-          //               <td>{stock.quantity}</td>
-          //               <td>{stock.allocatedDept}</td>
-          //               <td>
-          //                 {stock.bills ? (
-          //                   <a href={stock.bills} target="_blank" rel="noopener noreferrer">
-          //                     View Invoice
-          //                   </a>
-          //                 ) : (
-          //                   'No Invoice'
-          //                 )}
-          //               </td>
-          //               <td>{stock.hodApprovalStatus}</td>
-          //               <td>{stock.principalApprovalStatus}</td>
-          //               <td>
-          //                 {stock.directorApprovalStatus === 'pending' ? (
-          //                   <>
-          //                     <button
-          //                       className="approve-btn"
-          //                       onClick={() => handleApproval(stock._id, 'approved')}
-          //                     >
-          //                       Approve
-          //                     </button>
-          //                     <button
-          //                       className="reject-btn"
-          //                       onClick={() => handleApproval(stock._id, 'rejected')}
-          //                     >
-          //                       Reject
-          //                     </button>
-          //                   </>
-          //                 ) : (
-          //                   <span>{stock.directorApprovalStatus.toUpperCase()}</span>
-          //                 )}
-          //               </td>
-          //             </tr>
-          //           ))
-          //         )}
-          //       </tbody>
-          //     </table>
-          //   )}
-          // </div>
-          <ViewStocks />
-        )}
-      </div>
+    </div>
     </>
   );
 }
