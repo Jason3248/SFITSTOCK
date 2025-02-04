@@ -15,6 +15,7 @@ const StockQuery = () => {
     const [results, setResults] = useState([]);
     const [allocatedDepartments, setAllocatedDepartments] = useState([]);
     const [assetHeads, setAssetHeads] = useState([]);
+    const [roomNo, setRoomNo] = useState('');
   
     useEffect(() => {
       const fetchConfig = async () => {
@@ -39,7 +40,7 @@ const StockQuery = () => {
         return;
       }
   
-      const query = { stockType, allocatedDept, assetHead, specification, startDate, endDate, minAmount, maxAmount };
+      const query = { stockType, allocatedDept, assetHead, specification, roomNo, startDate, endDate, minAmount, maxAmount };
   
       try {
         const res = await axios.post("http://localhost:5000/api/items/search", query);
@@ -61,8 +62,9 @@ const StockQuery = () => {
         "Batch No": batch._id.batchNo,
         "Allocated Dept": batch._id.allocatedDept,
         "Asset Head": batch._id.assetHeads,
+        "Room No": batch._id.roomNo,
         "Quantity": batch.totalQuantity,
-        "Total Amount": `₹${batch.totalAmount}`,
+        "Total Amount": `₹${Math.round(batch.totalAmount)}`,
         "Date of Purchase": new Date(batch._id.dateOfPurchase).toLocaleDateString()
       }));
   
@@ -97,6 +99,7 @@ const StockQuery = () => {
             }
             </select>
           <input type="text" placeholder="Specification" onChange={(e) => setSpecification(e.target.value)} />
+          <input type="text" placeholder="Room No" onChange={(e) => setRoomNo(e.target.value)} />
           <input type="date" placeholder="Start Date" onChange={(e) => setStartDate(e.target.value)} />
           <input type="date" placeholder="End Date" onChange={(e) => setEndDate(e.target.value)} />
   
@@ -118,6 +121,7 @@ const StockQuery = () => {
                   <th>Batch No</th>
                   <th>Department</th>
                   <th>Asset Head</th>
+                  <th>Room No</th>
                   <th>Quantity</th>
                   <th>Total Amount</th>
                   <th>Date of Purchase (Format: MM-DD-YYYY)</th>
@@ -131,6 +135,7 @@ const StockQuery = () => {
                     <td>{batch._id.batchNo}</td>
                     <td>{batch._id.allocatedDept}</td>
                     <td>{batch._id.assetHeads}</td>
+                    <td>{batch._id.roomNo}</td>
                     <td>{batch.totalQuantity}</td>
                     <td>₹{Math.round(batch.totalAmount)}</td>
                     <td>{new Date(batch._id.dateOfPurchase).toLocaleDateString()}</td>
