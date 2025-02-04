@@ -20,7 +20,6 @@ const UserSchema = new Schema({
     unique: true,
     sparse: true
   },
- 
   userLevel: {
     type: Number,
     default: 1

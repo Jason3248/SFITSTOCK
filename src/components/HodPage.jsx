@@ -5,6 +5,7 @@ import { AppBar, Toolbar, Typography, Button, Box, Grid, Container, Card, CardCo
 import StockQuery from './StockQuery';
 import Profile from './Profile';
 import '../styles/hodPage.css';
+import DeptViewStocks from './DeptViewStocks';
 
 function HODPage() {
   const location = useLocation();
@@ -52,7 +53,7 @@ function HODPage() {
         <Container maxWidth="lg">
           {/* Navigation Buttons */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Button variant="contained" color="primary" onClick={() => setSelectedOption('Main Page')} sx={{ mr: 2 }}>
+            <Button variant="contained" color="primary" onClick={() => setSelectedOption('View Stocks')} sx={{ mr: 2 }}>
               View Stocks
             </Button>
             <Button variant="contained" color="primary" onClick={() => setSelectedOption('Fetch Stocks')} sx={{ mr: 2 }}>
@@ -66,7 +67,7 @@ function HODPage() {
           {/* Conditional Render based on selected option */}
           {selectedOption === 'Fetch Stocks' && <StockQuery />}
 
-          {selectedOption === 'Main Page' && (
+          {/* {selectedOption === 'Main Page' && (
             <>
               <Typography variant="h5" sx={{ mb: 2 }}>
                 Stocks for {department} Department
@@ -118,7 +119,12 @@ function HODPage() {
                 </Grid>
               )}
             </>
-          )}
+          )} */}
+          {
+            selectedOption === 'View Stocks' && (
+              <DeptViewStocks department={department}/>
+            )
+          }
 
           {selectedOption === 'Update Profile' && <Profile />}
         </Container>

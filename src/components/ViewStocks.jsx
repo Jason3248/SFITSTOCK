@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from 'react'
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-// DrillDownStockDetails Component
 const DrillDownStockDetails = ({ stocks }) => {
   // Error handling: Check if stocks exists and is an array
   if (!Array.isArray(stocks)) {

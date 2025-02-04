@@ -193,7 +193,7 @@ function PurchaseInCharge() {
           <Button variant="contained" color="primary" onClick={() => setSelectedOption('Add Stock')}>
             Add Stock
           </Button>
-          <Button variant="contained" color="secondary" onClick={() => setSelectedOption('Stocks')}>
+          <Button variant="contained" color="secondary" onClick={() => setSelectedOption('View Stocks')}>
             View Stocks
           </Button>
           <Button variant="contained" color="success" onClick={() => setSelectedOption('Fetch Stocks')}>
@@ -428,7 +428,7 @@ function PurchaseInCharge() {
           </div>
         )}
 
-        {selectedOption === 'Stocks' && <ViewStocks />}
+        {selectedOption === 'View Stocks' && <ViewStocks />}
         {selectedOption === 'Fetch Stocks' && <StockQuery />}
         {selectedOption === 'Update Profile' && <Profile />}
       </Box>

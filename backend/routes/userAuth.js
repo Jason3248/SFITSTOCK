@@ -37,7 +37,7 @@ router.post('/createuser', [
             name: req.body.name,
             password: hashnsalt,
             email: req.body.email,
-            pid: req.body.pid,
+            // pid: req.body.pid,
             userLevel: req.body.userLevel,
             userType: req.body.userType,
             department: req.body.department,
@@ -109,45 +109,106 @@ router.post('/getuser', fetchuser, async (req, res) => {
     }
   });
 
+  // router.put('/update-credentials', authMiddleware(), async (req, res) => {
+  //   const { email, currentPassword, newPassword} = req.body;
+  //   const userId = req.user._id;
+  
+  //   try {
+  //     const user = await User.findById(userId);
+  //     if (!user) {
+  //       return res.status(404).json({ message: 'User not found' });
+  //     }
+  
+  //     // Verify current password
+  //     const isMatch = await bcrypt.compare(currentPassword, user.password);
+  //     if (!isMatch) {
+  //       return res.status(400).json({ message: 'Current password is incorrect' });
+  //     }
+  
+  //     // Update email if provided and check for uniqueness
+  //     if (email) {
+  //       const emailExists = await User.findOne({ email });
+  //       if (emailExists && emailExists._id.toString() !== userId) {
+  //         return res.status(400).json({ message: 'Email already in use' });
+  //       }
+  //       user.email = email;
+  //     }
+  
+  //     // Update pid if provided and check for uniqueness
+  //     // if (pid) {
+  //     //   const pidExists = await User.findOne({ pid });
+  //     //   if (pidExists && pidExists._id.toString() !== userId) {
+  //     //     return res.status(400).json({ message: 'PID already in use' });
+  //     //   }
+  //     //   user.pid = pid;
+  //     // }
+  
+  //     // Update password if a new password is provided
+  //     if (newPassword) {
+  //       const salt = await bcrypt.genSalt(10);
+  //       user.password = await bcrypt.hash(newPassword, salt);
+  //     }
+  
+  //     await user.save();
+  //     res.json({ message: 'Profile updated successfully' });
+  //   } catch (error) {
+  //     console.error('Error updating credentials:', error);
+  //     res.status(500).json({ message: 'Server error' });
+  //   }
+  // });
+  
   router.put('/update-credentials', authMiddleware(), async (req, res) => {
-    const { email, currentPassword, newPassword, pid } = req.body;
+    const { email, currentPassword, newPassword } = req.body;
     const userId = req.user.id;
+  
+    console.log("Received Data:", { email, currentPassword, newPassword });
   
     try {
       const user = await User.findById(userId);
+      console.log("user", user);
+      
       if (!user) {
+        console.log("User not there");
+        
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Verify current password
+      if (!currentPassword) {
+        console.log("Password not there");
+        
+        return res.status(400).json({ message: 'Current password is required' });
+      }
+  
       const isMatch = await bcrypt.compare(currentPassword, user.password);
+      console.log("IsMatch", isMatch);
+      
       if (!isMatch) {
         return res.status(400).json({ message: 'Current password is incorrect' });
       }
   
-      // Update email if provided and check for uniqueness
-      if (email) {
-        const emailExists = await User.findOne({ email });
-        if (emailExists && emailExists._id.toString() !== userId) {
-          return res.status(400).json({ message: 'Email already in use' });
-        }
+      // if (email) {
+      //   const emailExists = await User.findOne({ email });
+      //   if (emailExists && emailExists._id.toString() !== userId) {
+      //     console.log("This exectues");
+          
+      //     return res.status(400).json({ message: 'Email already in use' });
+      //   }
+      //   user.email = email;
+      //   console.log(user.email);
+        
+      // }
+      if(email){
         user.email = email;
       }
+      
   
-      // Update pid if provided and check for uniqueness
-      if (pid) {
-        const pidExists = await User.findOne({ pid });
-        if (pidExists && pidExists._id.toString() !== userId) {
-          return res.status(400).json({ message: 'PID already in use' });
-        }
-        user.pid = pid;
-      }
-  
-      // Update password if a new password is provided
       if (newPassword) {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
+        console.log(user.password);
+        
       }
+
   
       await user.save();
       res.json({ message: 'Profile updated successfully' });
