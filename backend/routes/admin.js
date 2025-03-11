@@ -102,6 +102,7 @@ router.post('/createuser', [
 
 
 router.get('/config', async (req, res) => {
+   console.log("req received");
   try {
     let config = await Config.findOne();
 

@@ -497,6 +497,7 @@ router.put("/assignRooms", async (req, res) => {
 // });
 
 router.post("/addStock", async (req, res) => {
+  console.log(req.body);
   const {
     assetHeads,
     specification,
@@ -539,8 +540,8 @@ router.post("/addStock", async (req, res) => {
 
     await newStock.save();
 
-    // If Institutional Stock, create individual records in institutionalStock collection
     if (stockType === "Institutional Stock") {
+      const batchId = `INST/${specification}/${dateOfPurchase}/${vendorName}/${financialYear}`;
       let createdInstitutionalStocks = [];
 
       for (let i = 1; i <= quantity; i++) {
@@ -561,7 +562,8 @@ router.post("/addStock", async (req, res) => {
           purpose,
           stockType: "Institutional Stock",
           roomNo, // Institutional Stocks have roomNo at the time of creation
-          status: "Approved"
+          status: "Approved",
+          batchId
         });
 
         await newInstitutionalStock.save();
@@ -574,11 +576,11 @@ router.post("/addStock", async (req, res) => {
       });
     }
 
-    // If Departmental Stock, create individual records in deptStock collection
     if (stockType === "Departmental Stock") {
       let createdStocks = [];
 
       for (let dept of allocatedDept) {
+        const batchId = `${dept.department}/${assetHeads}/${specification}/${dateOfPurchase}/${vendorName}/${financialYear}`;
         for (let i = 1; i <= dept.allocatedQuantity; i++) {
           const uniqueId = `${dept.department}/${specification}/${dateOfPurchase}/${vendorName}/${batchNo}/${i}`;
 
@@ -597,7 +599,8 @@ router.post("/addStock", async (req, res) => {
             purpose,
             allocatedDept: dept.department,
             roomNo: "",
-            status: "Pending"
+            status: "Pending",
+            batchId
           });
 
           await newDepartmentalStock.save();
@@ -616,6 +619,291 @@ router.post("/addStock", async (req, res) => {
     return res.status(500).json({ error: "Failed to add stock", details: err.message });
   }
 });
+
+// router.put("/editBatch/:batchId", async (req, res) => {
+//   const batchId = decodeURIComponent(req.params.batchId);
+//   console.log(req.body);
+//   const updatedFields = req.body;
+
+//   try {
+//     let stockCollection;
+
+//     // Determine if it's an Institutional or Departmental Stock
+//     if (batchId.startsWith("INST/")) {
+//       stockCollection = instStock;
+//     } else {
+//       stockCollection = deptStock;
+//     }
+
+//     // Update all stocks with the given batchId
+//     const updatedStocks = await stockCollection.updateMany(
+//       { batchId },
+//       { $set: updatedFields }
+//     );
+
+//     if (updatedStocks.matchedCount === 0) {
+//       return res.status(404).json({ error: "Batch not found" });
+//     }
+
+//     return res.status(200).json({
+//       message: "Batch updated successfully",
+//       modifiedCount: updatedStocks.modifiedCount,
+//     });
+//   } catch (err) {
+//     console.error("Error updating batch:", err);
+//     return res.status(500).json({ error: "Failed to update batch", details: err.message });
+//   }
+// });
+
+// router.get("/getBatches", async (req, res) => {
+//   try {
+//     console.log("Fetching batches...");
+
+//     const stockBatches = await deptStock.aggregate([
+//       { $match: { batchId: { $exists: true, $ne: null } } },
+//       { $group: { _id: "$batchId", batchDetails: { $first: "$$ROOT" } } },
+//       { $replaceRoot: { newRoot: "$batchDetails" } }
+//     ]);
+
+//     const institutionalBatches = await instStock.aggregate([
+//       { $match: { batchId: { $exists: true, $ne: null } } },
+//       { $group: { _id: "$batchId", batchDetails: { $first: "$$ROOT" } } },
+//       { $replaceRoot: { newRoot: "$batchDetails" } }
+//     ]);
+
+//     console.log("Stock Batches:", stockBatches);
+//     console.log("Institutional Batches:", institutionalBatches);
+
+//     res.status(200).json([...stockBatches, ...institutionalBatches]);
+//   } catch (error) {
+//     console.error("🔥 Error fetching stock batches:", error);
+//     res.status(500).json({ error: "Failed to fetch stock batches" });
+//   }
+// });
+// router.post("/searchStocks", async (req, res) => {
+
+//   try {
+
+//     const deptStocks = await deptStock.aggregate([
+//       {
+//         $group: {
+//           _id: {
+//             allocatedDept: "$allocatedDept",
+//             specification: "$specification",
+//             dateOfPurchase: "$dateOfPurchase",
+//             vendorName: "$vendorName",
+//             batchNo: "$batchNo",
+//           },
+//           totalQuantity: { $sum: 1 },
+//           totalAmount: { $sum: "$individualAmount" },
+//           stocks: { $push: "$_id" },
+//           details: { $push: "$$ROOT" }
+//         }
+//       }
+//     ]);
+
+//     const instStocks = await instStock.aggregate([
+//       {
+//         $group: {
+//           _id: {
+//             assetHeads: "$assetHeads",
+//             financialYear: "$financialYear",
+//             specification: "$specification",
+//             dateOfPurchase: "$dateOfPurchase",
+//             vendorName: "$vendorName",
+//             batchNo: "$batchNo",
+//           },
+//           totalQuantity: { $sum: 1 },
+//           totalAmount: { $sum: "$individualAmount" },
+//           stocks: { $push: "$_id" },
+//           details: { $push: "$$ROOT" }
+//         }
+//       }
+//     ])
+
+//     res.status(200).json([...deptStocks, ...instStocks]);
+//   } catch (err) {
+//     console.error("Error fetching stocks:", err);
+//     res.status(500).json({ error: "Failed to fetch stocks" });
+//   }
+// });
+
+// router.put("/updateStock", async (req, res) => {
+//   try {
+//     const { stockType, batchCriteria, updatedFields } = req.body;
+
+//     let collection = stockType === "Institutional Stock" ? instStock : deptStock;
+
+//     const updateResult = await collection.updateMany(batchCriteria, { $set: updatedFields });
+
+//     res.status(200).json({ message: "Stock batch updated successfully", modifiedCount: updateResult.modifiedCount });
+//   } catch (err) {
+//     console.error("Error updating stock batch:", err);
+//     res.status(500).json({ error: "Failed to update stock batch" });
+//   }
+// });
+
+// router.delete("/deleteStock", async (req, res) => {
+//   try {
+//     const { stockType, batchCriteria } = req.body;
+
+//     let collection = stockType === "Institutional Stock" ? instStock : deptStock;
+
+//     const deleteResult = await collection.deleteMany(batchCriteria);
+
+//     res.status(200).json({ message: "Stock batch deleted successfully", deletedCount: deleteResult.deletedCount });
+//   } catch (err) {
+//     console.error("Error deleting stock batch:", err);
+//     res.status(500).json({ error: "Failed to delete stock batch" });
+//   }
+// });
+
+router.post("/searchStocks", async (req, res) => {
+  try {
+    const deptStocks = await deptStock.aggregate([
+      {
+        $group: {
+          _id: {
+            assetHeads: "$assetHeads",
+            allocatedDept: "$allocatedDept",
+            specification: "$specification",
+            dateOfPurchase: "$dateOfPurchase",
+            vendorName: "$vendorName",
+            batchNo: "$batchNo",
+            roomNo: "$roomNo",
+            financialYear: "$financialYear"
+          },
+          totalQuantity: { $sum: 1 },
+          totalAmount: { $sum: "$individualAmount" },
+          stocks: { $push: "$_id" },
+          details: { $push: "$$ROOT" },
+          stockType: { $first: "Departmental Stock" }
+        }
+      }
+    ]);
+
+    const instStocks = await instStock.aggregate([
+      {
+        $group: {
+          _id: {
+            assetHeads: "$assetHeads",
+            financialYear: "$financialYear",
+            specification: "$specification",
+            dateOfPurchase: "$dateOfPurchase",
+            vendorName: "$vendorName",
+            batchNo: "$batchNo",
+            roomNo: "$roomNo",
+            financialYear: "$financialYear"
+          },
+          totalQuantity: { $sum: 1 },
+          totalAmount: { $sum: "$individualAmount" },
+          stocks: { $push: "$_id" },
+          details: { $push: "$$ROOT" },
+          stockType: { $first: "Institutional Stock" }
+        }
+      }
+    ]);
+
+    res.status(200).json([...deptStocks, ...instStocks]);
+  } catch (err) {
+    console.error("Error fetching stocks:", err);
+    res.status(500).json({ error: "Failed to fetch stocks" });
+  }
+});
+
+// Update Stock Batch (Including _id Update)
+router.put("/updateStock", async (req, res) => {
+  try {
+    const { stockType, batchCriteria, updatedFields } = req.body;
+    let collection = stockType === "Institutional Stock" ? instStock : deptStock;
+
+    const updateQuery = {
+      assetHeads: batchCriteria.assetHeads,
+      allocatedDept: batchCriteria.allocatedDept,
+      specification: batchCriteria.specification,
+      dateOfPurchase: batchCriteria.dateOfPurchase,
+      vendorName: batchCriteria.vendorName,
+      batchNo: batchCriteria.batchNo,
+      roomNo: batchCriteria.roomNo,
+      financialYear: batchCriteria.financialYear
+    };
+
+    // Find all matching stocks
+    const stocksToUpdate = await collection.find(updateQuery).lean();
+
+    if (stocksToUpdate.length === 0) {
+      return res.status(404).json({ message: "No matching stock found for update." });
+    }
+
+    let idChanged = false;
+    let newStocks = [];
+
+    stocksToUpdate.forEach((stock, index) => {
+      let updatedStock = { ...stock, ...updatedFields };
+
+      // If any field affecting `_id` has changed, we need to delete old and insert new
+      if (
+        updatedFields.allocatedDept || updatedFields.specification ||
+        updatedFields.dateOfPurchase || updatedFields.vendorName ||
+        updatedFields.batchNo || updatedFields.roomNo
+      ) {
+        idChanged = true;
+        updatedStock._id = `${updatedStock.allocatedDept}/${updatedStock.specification}/${updatedStock.dateOfPurchase}/${updatedStock.vendorName}/${updatedStock.batchNo}/${index + 1}`;
+      }
+
+      newStocks.push(updatedStock);
+    });
+
+    // If `_id` is changing, delete old stocks and insert new ones
+    if (idChanged) {
+      await collection.deleteMany(updateQuery);
+      await collection.insertMany(newStocks);
+    } else {
+      await collection.updateMany(updateQuery, { $set: updatedFields });
+    }
+
+    res.status(200).json({
+      message: "Stock batch updated successfully",
+      modifiedCount: newStocks.length
+    });
+  } catch (err) {
+    console.error("Error updating stock batch:", err);
+    res.status(500).json({ error: "Failed to update stock batch" });
+  }
+});
+
+
+
+// Delete Stock Batch
+router.delete("/deleteStock", async (req, res) => {
+  try {
+    const { stockType, batchCriteria } = req.body;
+    let collection = stockType === "Institutional Stock" ? instStock : deptStock;
+
+    const deleteQuery = {
+      assetHeads: batchCriteria.assetHeads,
+      allocatedDept: batchCriteria.allocatedDept,
+      specification: batchCriteria.specification,
+      dateOfPurchase: batchCriteria.dateOfPurchase,
+      vendorName: batchCriteria.vendorName,
+      batchNo: batchCriteria.batchNo,
+      roomNo: batchCriteria.roomNo,
+      financialYear: batchCriteria.financialYear
+    };
+
+    const deleteResult = await collection.deleteMany(deleteQuery);
+
+    res.status(200).json({
+      message: "Stock batch deleted successfully",
+      deletedCount: deleteResult.deletedCount
+    });
+  } catch (err) {
+    console.error("Error deleting stock batch:", err);
+    res.status(500).json({ error: "Failed to delete stock batch" });
+  }
+});
+
+
 
 
 
@@ -820,38 +1108,38 @@ router.post('/addDepartmentalStock', async (req, res) => {
 // };
 
 
-router.get('/groupStocks', async (req, res) => {
-  try {
-    const groupedStocks = await stock.aggregate([
-      {
-        $group: {
-          _id: {
+// router.get('/groupStocks', async (req, res) => {
+//   try {
+//     const groupedStocks = await stock.aggregate([
+//       {
+//         $group: {
+//           _id: {
           
-            assetHeads: "$assetHeads",
-            allocatedDept: "$allocatedDept",
-            batchNo: "$batchNo",
-            vendorName: "$vendorName",
-            quantity: "$quantity",
-            bills: "$bills",
-            purpose: "$purpose",
-            roomNo: "$roomNo",
-            totalAmount: "$totalAmount",
-            financialYear: "$financialYear",
-            batchNo: "$batchNo",
-            specification: "$specification",
-            dateOfPurchase: "$dateOfPurchase",
-            vendorName: "$vendorName"
-          },
-          totalQuantity: { $sum: 1 }, // Counting all documents with the same group key
-          details: { $push: "$$ROOT" } // Collecting all individual stock documents
-        }
-      }
-    ]);
-    res.json(groupedStocks);
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-})
+//             assetHeads: "$assetHeads",
+//             allocatedDept: "$allocatedDept",
+//             batchNo: "$batchNo",
+//             vendorName: "$vendorName",
+//             quantity: "$quantity",
+//             bills: "$bills",
+//             purpose: "$purpose",
+//             roomNo: "$roomNo",
+//             totalAmount: "$totalAmount",
+//             financialYear: "$financialYear",
+//             batchNo: "$batchNo",
+//             specification: "$specification",
+//             dateOfPurchase: "$dateOfPurchase",
+//             vendorName: "$vendorName"
+//           },
+//           totalQuantity: { $sum: 1 }, // Counting all documents with the same group key
+//           details: { $push: "$$ROOT" } // Collecting all individual stock documents
+//         }
+//       }
+//     ]);
+//     res.json(groupedStocks);
+//   } catch (err) {
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// })
 
 
 router.get("/groupDeptApprovedStocks/:department", async (req, res) => {
@@ -953,6 +1241,118 @@ router.get("/groupDeptApprovedStocks/:department", async (req, res) => {
     res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
+router.get('/groupStocks', async (req, res) => {
+  try {
+    const aggregateStocks = async (collection) => {
+      try {
+        return await collection.aggregate([
+          {
+            $addFields: {
+              // Ensure 'dateOfPurchase' is in correct format before conversion
+              dateOfPurchase: {
+                $cond: {
+                  if: { $regexMatch: { input: "$dateOfPurchase", regex: /^\d{4}-\d{2}-\d{2}$/ } },
+                  then: { $dateFromString: { dateString: "$dateOfPurchase", format: "%Y-%m-%d" } },
+                  else: null
+                }
+              }
+            }
+          },
+          {
+            $match: {
+              dateOfPurchase: { $type: "date" } // Ensure it's a valid Date
+            }
+          },
+          // Group by month-year and assetHeads
+          {
+            $group: {
+              _id: {
+                assetHeads: "$assetHeads",
+                financialYear: "$financialYear",
+                monthYear: { $dateToString: { format: "%Y-%m", date: "$dateOfPurchase" } }
+              },
+              totalQuantity: { $sum: "$quantity" },
+              totalAmount: { $sum: "$totalAmount" },
+              stocks: {
+                $push: {
+                  specification: "$specification",
+                  quantity: "$quantity",
+                  totalAmount: "$totalAmount",
+                  dateOfPurchase: "$dateOfPurchase",
+                  bills: "$bills",
+                  allocatedDept: "$allocatedDept",
+                  stockType: "$stockType"
+                }
+              }
+            }
+          },
+          // Regroup to consolidate stocks per assetHeads and monthYear
+          {
+            $group: {
+              _id: {
+                assetHeads: "$_id.assetHeads",
+                monthYear: "$_id.monthYear"
+              },
+              totalQuantity: { $sum: "$totalQuantity" },
+              totalAmount: { $sum: "$totalAmount" },
+              stocks: { $push: "$stocks" }
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              assetHeads: "$_id.assetHeads",
+              monthYear: "$_id.monthYear",
+              totalQuantity: 1,
+              totalAmount: 1,
+              stocks: {
+                $reduce: {
+                  input: "$stocks",
+                  initialValue: [],
+                  in: { $concatArrays: ["$$value", "$$this"] }
+                }
+              }
+            }
+          },
+          {
+            $group: {
+              _id: "$assetHeads",
+              totalQuantity: { $sum: "$totalQuantity" },
+              totalAmount: { $sum: "$totalAmount" },
+              monthlyBreakdown: {
+                $push: {
+                  monthYear: "$monthYear",
+                  totalQuantity: "$totalQuantity",
+                  totalAmount: "$totalAmount",
+                  stocks: "$stocks"
+                }
+              }
+            }
+          },
+          {
+            $sort: { "_id": 1 } // Sort by assetHeads alphabetically
+          }
+        ]);
+      } catch (err) {
+        console.error("Aggregation error:", err);
+        return [];
+      }
+    };
+
+    // Aggregate both collections
+    const deptStocks = await aggregateStocks(departmentalStock);
+    const instStocks = await aggregateStocks(institutionalStock);
+
+    // Merge results
+    const mergedStocks = [...deptStocks, ...instStocks];
+
+    res.json(mergedStocks);
+  } catch (err) {
+    console.error("Error in aggregation:", err);
+    res.status(500).json({ message: 'Server Error', error: err.message });
+  }
+});
+
 router.get('/groupApprovedStocks', async (req, res) => {
   try {
     const groupedStocks = await approvedStock.aggregate([
@@ -1054,6 +1454,246 @@ router.get('/groupApprovedStocks', async (req, res) => {
     res.status(500).json({ message: 'Server Error', error: err.message });
   }
 });
+router.get('/groupStocks', async (req, res) => {
+  try {
+    const aggregateStocks = async (collection) => {
+      return await collection.aggregate([
+        {
+          $addFields: {
+            // Convert 'dateOfPurchase' string (yyyy-mm-dd) to a Date object
+            dateOfPurchase: {
+              $dateFromString: { dateString: "$dateOfPurchase", format: "%Y-%m-%d" }
+            }
+          }
+        },
+        {
+          $match: {
+            dateOfPurchase: { $type: "date" } // Ensure it's a valid Date
+          }
+        },
+        // Group by month-year and assetHeads
+        {
+          $group: {
+            _id: {
+              assetHeads: "$assetHeads",
+              financialYear: "$financialYear",
+              monthYear: { $dateToString: { format: "%Y-%m", date: "$dateOfPurchase" } }
+            },
+            totalQuantity: { $sum: "$quantity" },
+            totalAmount: { $sum: "$totalAmount" },
+            stocks: {
+              $push: {
+                specification: "$specification",
+                quantity: "$quantity",
+                totalAmount: "$totalAmount",
+                dateOfPurchase: "$dateOfPurchase",
+                bills: "$bills",
+                allocatedDept: "$allocatedDept",
+                stockType: "$stockType"
+              }
+            }
+          }
+        },
+        // Regroup to consolidate stocks per assetHeads and monthYear
+        {
+          $group: {
+            _id: {
+              assetHeads: "$_id.assetHeads",
+              monthYear: "$_id.monthYear"
+            },
+            totalQuantity: { $sum: "$totalQuantity" },
+            totalAmount: { $sum: "$totalAmount" },
+            stocks: { $push: "$stocks" }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            assetHeads: "$_id.assetHeads",
+            monthYear: "$_id.monthYear",
+            totalQuantity: 1,
+            totalAmount: 1,
+            stocks: {
+              $reduce: {
+                input: "$stocks",
+                initialValue: [],
+                in: { $concatArrays: ["$$value", "$$this"] }
+              }
+            }
+          }
+        },
+        {
+          $group: {
+            _id: "$assetHeads",
+            totalQuantity: { $sum: "$totalQuantity" },
+            totalAmount: { $sum: "$totalAmount" },
+            monthlyBreakdown: {
+              $push: {
+                monthYear: "$monthYear",
+                totalQuantity: "$totalQuantity",
+                totalAmount: "$totalAmount",
+                stocks: "$stocks"
+              }
+            }
+          }
+        },
+        {
+          $addFields: {
+            monthlyBreakdown: {
+              $sortArray: {
+                input: "$monthlyBreakdown",
+                sortBy: { monthYear: -1 }
+              }
+            }
+          }
+        },
+        { $sort: { "_id": 1 } }
+      ]);
+    };
+
+    // Aggregate both collections
+    const deptStocks = await aggregateStocks(departmentalStock);
+    const instStocks = await aggregateStocks(institutionalStock);
+
+    // Merge results
+    const mergedStocks = [...deptStocks, ...instStocks];
+
+    res.json(mergedStocks);
+  } catch (err) {
+    console.error("Error in aggregation:", err);
+    res.status(500).json({ message: 'Server Error', error: err.message });
+  }
+});
+
+// router.get('/groupStocks', async (req, res) => {
+//   try {
+//     const groupedStocks = await deptStock.aggregate([
+//       // Convert dateOfPurchase string to Date object in deptStocks
+//       {
+//         $addFields: {
+//           dateOfPurchase: {
+//             $dateFromString: {
+//               dateString: "$dateOfPurchase",
+//               format: "%Y-%m-%d"
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $match: {
+//           dateOfPurchase: { $type: "date" }
+//         }
+//       },
+//       // Now union with instStocks collection
+//       {
+//         $unionWith: {
+//           coll: "instStocks", // Make sure this matches your instStocks collection name
+//           pipeline: [
+//             {
+//               $addFields: {
+//                 dateOfPurchase: {
+//                   $dateFromString: {
+//                     dateString: "$dateOfPurchase",
+//                     format: "%Y-%m-%d"
+//                   }
+//                 }
+//               }
+//             },
+//             {
+//               $match: {
+//                 dateOfPurchase: { $type: "date" }
+//               }
+//             }
+//           ]
+//         }
+//       },
+//       // Group data strictly by monthYear
+//       {
+//         $group: {
+//           _id: {
+//             assetHeads: "$assetHeads",
+//             financialYear: "$financialYear",
+//             monthYear: { $dateToString: { format: "%Y-%m", date: "$dateOfPurchase" } }
+//           },
+//           totalQuantity: { $sum: "$quantity" },
+//           totalAmount: { $sum: "$totalAmount" },
+//           stocks: {
+//             $push: {
+//               specification: "$specification",
+//               quantity: "$quantity",
+//               totalAmount: "$totalAmount",
+//               dateOfPurchase: "$dateOfPurchase",
+//               bills: "$bills",
+//               allocatedDept: "$allocatedDept",
+//               stockType: "$stockType"
+//             }
+//           }
+//         }
+//       },
+//       // Regroup to consolidate stocks at the monthYear level
+//       {
+//         $group: {
+//           _id: {
+//             assetHeads: "$_id.assetHeads",
+//             monthYear: "$_id.monthYear"
+//           },
+//           totalQuantity: { $sum: "$totalQuantity" },
+//           totalAmount: { $sum: "$totalAmount" },
+//           stocks: { $push: "$stocks" }
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           assetHeads: "$_id.assetHeads",
+//           monthYear: "$_id.monthYear",
+//           totalQuantity: 1,
+//           totalAmount: 1,
+//           stocks: {
+//             $reduce: {
+//               input: "$stocks",
+//               initialValue: [],
+//               in: { $concatArrays: ["$$value", "$$this"] }
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: "$assetHeads",
+//           totalQuantity: { $sum: "$totalQuantity" },
+//           totalAmount: { $sum: "$totalAmount" },
+//           monthlyBreakdown: {
+//             $push: {
+//               monthYear: "$monthYear",
+//               totalQuantity: "$totalQuantity",
+//               totalAmount: "$totalAmount",
+//               stocks: "$stocks"
+//             }
+//           }
+//         }
+//       },
+//       // Sort monthly breakdown by descending monthYear
+//       {
+//         $addFields: {
+//           monthlyBreakdown: {
+//             $sortArray: {
+//               input: "$monthlyBreakdown",
+//               sortBy: { monthYear: -1 }
+//             }
+//           }
+//         }
+//       },
+//       { $sort: { "_id": 1 } }
+//     ]);
+
+//     res.json(groupedStocks);
+//   } catch (err) {
+//     console.error("Error in aggregation:", err);
+//     res.status(500).json({ message: 'Server Error', error: err.message });
+//   }
+// });
+
 // router.get('/groupApprovedStocks', async (req, res) => {
 //   try {
 //     const groupedStocks = await approvedStock.aggregate([
@@ -1111,6 +1751,121 @@ router.get('/groupApprovedStocks', async (req, res) => {
 //     res.status(500).json({ message: 'Server Error', error: err.message });
 //   }
 // });
+// router.get("/groupStocks", async (req, res) => {
+//   try {
+//     const aggregateStocks = async (model) => {
+//       return await model.aggregate([
+//         {
+//           $addFields: {
+//             dateOfPurchase: { 
+//               $dateFromString: { dateString: "$dateOfPurchase", format: "%Y-%m-%d" } 
+//             }
+//           }
+//         },
+//         { 
+//           $match: { dateOfPurchase: { $type: "date" } } 
+//         },
+//         {
+//           $group: {
+//             _id: {
+//               assetHeads: "$assetHeads",
+//               financialYear: "$financialYear",
+//               monthYear: { $dateToString: { format: "%Y-%m", date: "$dateOfPurchase" } }
+//             },
+//             totalQuantity: { $sum: "$quantity" },
+//             totalAmount: { $sum: "$totalAmount" },
+//             stocks: {
+//               $push: {
+//                 specification: "$specification",
+//                 quantity: "$quantity",
+//                 totalAmount: "$totalAmount",
+//                 dateOfPurchase: "$dateOfPurchase",
+//                 bills: "$bills",
+//                 stockType: "$stockType",
+//                 ...(model.modelName === "deptStock" ? { allocatedDept: "$allocatedDept" } : { roomNo: "$roomNo" })
+//               }
+//             }
+//           }
+//         },
+//         {
+//           $group: {
+//             _id: {
+//               assetHeads: "$_id.assetHeads",
+//               monthYear: "$_id.monthYear"
+//             },
+//             totalQuantity: { $sum: "$totalQuantity" },
+//             totalAmount: { $sum: "$totalAmount" },
+//             stocks: { $push: "$stocks" }
+//           }
+//         },
+//         {
+//           $project: {
+//             _id: 0,
+//             assetHeads: "$_id.assetHeads",
+//             monthYear: "$_id.monthYear",
+//             totalQuantity: 1,
+//             totalAmount: 1,
+//             stocks: {
+//               $reduce: {
+//                 input: "$stocks",
+//                 initialValue: [],
+//                 in: { $concatArrays: ["$$value", "$$this"] }
+//               }
+//             }
+//           }
+//         }
+//       ]);
+//     };
+
+//     // Aggregate from both collections
+//     const [instStockData, deptStockData] = await Promise.all([
+//       aggregateStocks(InstStock),
+//       aggregateStocks(DeptStock)
+//     ]);
+
+//     // Merge both results
+//     const mergedData = [...instStockData, ...deptStockData];
+
+//     // Final grouping by `assetHeads`
+//     const groupedStocks = await mongoose.model("instStock").aggregate([
+//       {
+//         $match: { assetHeads: { $exists: true } } // Ensures only valid documents are processed
+//       },
+//       {
+//         $group: {
+//           _id: "$assetHeads",
+//           totalQuantity: { $sum: "$totalQuantity" },
+//           totalAmount: { $sum: "$totalAmount" },
+//           monthlyBreakdown: {
+//             $push: {
+//               monthYear: "$monthYear",
+//               totalQuantity: "$totalQuantity",
+//               totalAmount: "$totalAmount",
+//               stocks: "$stocks"
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $addFields: {
+//           monthlyBreakdown: {
+//             $sortArray: {
+//               input: "$monthlyBreakdown",
+//               sortBy: { monthYear: -1 }
+//             }
+//           }
+//         }
+//       },
+//       { $sort: { "_id": 1 } }
+//     ]);
+
+//     res.json(groupedStocks);
+//   } catch (err) {
+//     console.error("Error in aggregation:", err);
+//     res.status(500).json({ message: "Server Error", error: err.message });
+//   }
+// });
+
 router.get('/get', async (req, res) => {
   try {
     const items = await stock.find();
@@ -1815,10 +2570,12 @@ router.post("/search", async (req, res) => {
             allocatedDept: "$allocatedDept",
             assetHeads: "$assetHeads",
             roomNo: "$roomNo", 
-            dateOfPurchase: "$dateOfPurchase"
+            dateOfPurchase: "$dateOfPurchase",
+            financialYear: "$financialYear"
           },
           totalQuantity: { $sum: 1 },
           totalAmount: { $sum: { $multiply: ["$individualAmount", 1] } },
+          stockType: { $first: "$stockType"},
           stocks: { $push: "$_id" }
         }
       },
@@ -1847,6 +2604,47 @@ router.post("/search", async (req, res) => {
   }
 });
 
+
+router.get('/groupedBatches', async (req, res) => {
+  try {
+    const groupedStocks = await approvedStock.aggregate([
+      {
+        $group: {
+          
+          assetHeads: { $first: "$assetHeads" },
+          specification: { $first: "$specification" },
+          vendorName: { $first: "$vendorName" },
+          stockType: { $first: "$stockType" },
+          allocatedDept: { $push: "$allocatedDept" },
+          quantity: { $sum: "$quantity" },
+          totalAmount: { $sum: "$totalAmount" },
+          dateOfPurchase: { $first: "$dateOfPurchase" },
+          financialYear: { $first: "$financialYear" },
+          purpose: { $first: "$purpose" },
+          bills: { $first: "$bills" }
+        }
+      }
+    ]);
+
+    res.json(groupedStocks);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching stock batches", error });
+  }
+});
+
+router.put('/updateBatch/:batchNo', async (req, res) => {
+  try {
+    const { batchNo } = req.params;
+    const updatedData = req.body;
+
+    // Update all stocks within this batch number
+    await approvedStock.updateMany({ batchNo }, { $set: updatedData });
+
+    res.json({ message: "Stock batch updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating stock batch", error });
+  }
+});
 
 
 

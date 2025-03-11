@@ -8,6 +8,8 @@ import Profile from './Profile';
 import ViewStocks from "./ViewStocks";
 import sfit_logo from '../components/assets/sfit_logo.gif'
 import * as XLSX from 'xlsx';
+import EditStock from "./EditStock";
+
 
 function PurchaseInCharge() {
   const [approvedStocks, setApprovedStocks] = useState([]);
@@ -37,7 +39,11 @@ function PurchaseInCharge() {
 
   const fetchConfig = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/config");
+      const res = await axios.get("http://localhost:5000/api/admin/config", {
+        headers: { "Accept": "application/json" },
+        responseType: "json", 
+      });
+      console.log("Fetched config:", res.data); 
       setAssetHeads(res.data.assetHeads || []);
       setAllocatedDepartments(res.data.allocatedDept || []);
       console.log(allocatedDepartments);
@@ -119,7 +125,7 @@ function PurchaseInCharge() {
         uploadedBillUrl = await uploadFile();
       }
 
-      const { assetHeads, specification, vendorName, totalAmount, batchNo, dateOfPurchase, purpose, financialYear, bills, allocatedDept, stockType, quantity } = stockData;
+      const { assetHeads, specification, vendorName, totalAmount, batchNo, dateOfPurchase, purpose, financialYear, bills, allocatedDept, stockType, quantity, roomNo } = stockData;
 
       // Handle backend call for adding stock
       await axios.post("http://localhost:5000/api/items/addStock", {
@@ -134,7 +140,8 @@ function PurchaseInCharge() {
         bills: uploadedBillUrl || bills,
         allocatedDept,
         stockType,
-        quantity
+        quantity,
+        roomNo
       });
 
       setEditId(null);
@@ -152,7 +159,8 @@ function PurchaseInCharge() {
         financialYear: "",
         bills: "",
         stockType: "Departmental Stock",
-        allocatedDept: [{ department: "", allocatedQuantity: 0 }]
+        allocatedDept: [{ department: "", allocatedQuantity: 0 }],
+        roomNo: ""
       });
       setSelectedOption('Stocks');
     } catch (error) {
@@ -194,6 +202,9 @@ function PurchaseInCharge() {
         <div className="navbar-links">
           <Button variant="contained" color="primary" onClick={() => setSelectedOption('Add Stock')}>
             Add Stock
+          </Button>
+          <Button variant="contained" color="primary" onClick={() => setSelectedOption('Modify Stocks')}>
+            Modify Stocks
           </Button>
           <Button variant="contained" color="secondary" onClick={() => setSelectedOption('View Stocks')}>
             View Stocks
@@ -433,6 +444,7 @@ function PurchaseInCharge() {
         {selectedOption === 'View Stocks' && <ViewStocks />}
         {selectedOption === 'Fetch Stocks' && <StockQuery />}
         {selectedOption === 'Update Profile' && <Profile />}
+        {selectedOption === 'Modify Stocks' && <EditStock />}
       </Box>
     </Box>
   );

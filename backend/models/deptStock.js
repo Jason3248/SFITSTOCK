@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const departmentalStockSchema = new mongoose.Schema({
-  _id: String,  // Unique ID format
+  _id: String,
   assetHeads: String,
   specification: String,
   vendorName: String,
@@ -13,9 +13,9 @@ const departmentalStockSchema = new mongoose.Schema({
   individualAmount: Number, 
   bills: String,
   purpose: String,
-  allocatedDept: String,  // Assigned department
-  roomNo: String, // Initially empty, will be updated by Dept In-Charge
-  status: { type: String, default: "Pending" } // Status of stock allocation
+  allocatedDept: String,  
+  roomNo: String, 
+  status: { type: String, default: "Pending" } 
 });
 
 module.exports = mongoose.model("deptStock", departmentalStockSchema);
