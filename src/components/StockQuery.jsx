@@ -90,7 +90,7 @@ const StockQuery = () => {
       "Asset Head": batch._id.assetHeads,
       "Room No": batch._id.roomNo,
       "Quantity": batch.totalQuantity,
-      "Total Amount": `₹${Math.round(batch.totalAmount)}`,
+      "Total Amount": `₹${batch.totalAmount.toFixed(2)}`,
       "Date of Purchase": new Date(batch._id.dateOfPurchase).toLocaleDateString(),
     }));
 
@@ -180,7 +180,7 @@ const StockQuery = () => {
                     <TableCell>{batch._id.assetHeads}</TableCell>
                     <TableCell>{batch._id.roomNo}</TableCell>
                     <TableCell>{batch.totalQuantity}</TableCell>
-                    <TableCell>₹{Math.round(batch.totalAmount)}</TableCell>
+                    <TableCell>₹{batch.totalAmount.toFixed(2)}</TableCell>
                     <TableCell>{new Date(batch._id.dateOfPurchase).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}

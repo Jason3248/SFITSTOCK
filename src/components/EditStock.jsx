@@ -379,13 +379,13 @@ const ModifyStock = () => {
               <TableCell>{batch._id.assetHeads}</TableCell>
               <TableCell>{batch._id.specification}</TableCell>
               <TableCell>{batch._id.batchNo}</TableCell>
-              <TableCell>{batch._id.allocatedDept}</TableCell>
+              <TableCell>{batch._id.allocatedDept === "" ? ("Institutional") : batch._id.allocatedDept}</TableCell>
               <TableCell>{batch._id.dateOfPurchase}</TableCell>
               <TableCell>{batch._id.vendorName}</TableCell>
               <TableCell>{batch.totalQuantity}</TableCell>
               <TableCell>{batch._id.roomNo}</TableCell>
               <TableCell>{batch._id.financialYear}</TableCell>
-              <TableCell>₹{Math.round(batch.totalAmount)}</TableCell>
+              <TableCell>₹{batch.totalAmount.toFixed(2)}</TableCell>
               {/* <TableCell>{batch.stockType}</TableCell> */}
               <TableCell>
                 <Tooltip title="Modify">
